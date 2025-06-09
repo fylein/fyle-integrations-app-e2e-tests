@@ -1,6 +1,7 @@
 import { test } from '../common/fixture';
 import { expect } from '@playwright/test';
 import { login } from '../common/setup/login';
+import { waitForComboboxOptions } from '../common/utils/wait';
 
 test.describe('Integrations - Intacct', () => {
 
@@ -28,5 +29,36 @@ test.describe('Integrations - Intacct', () => {
 
     await iframe.getByRole('button', { name: 'Save and continue' }).click();
     await expect(iframe.getByRole('heading', { name: 'Export settings' })).toBeVisible({ timeout: 90_000 });
+
+    // Export settings - reimbursable expenses
+    const glAccountCombobox = iframe.getByRole('combobox', { name: 'Select GL account' });
+
+    // Wait for attributes to sync before filling out export settings
+    // Once synced, the GL account combobox should have
+    await waitForComboboxOptions(page, iframe, glAccountCombobox, async () => {
+      await iframe.locator('app-configuration-toggle-field').filter({ hasText: 'Export reimbursable expenses' }).locator('p-inputswitch span').click();
+      await iframe.getByRole('combobox', { name: 'Select expense export module' }).click();
+      await iframe.getByRole('option', { name: 'Journal entry' }).click();
+    });
+
+    await glAccountCombobox.click();
+    await iframe.getByRole('option', { name: 'Accm.Depr. Furniture &' }).first().click();
+    await iframe.getByRole('combobox', { name: 'Select representation' }).click();
+    await iframe.getByRole('option', { name: 'Vendor' }).click();
+    await iframe.getByText('Select mapping method').click();
+    await iframe.getByRole('option', { name: 'Based on employee e-mail ID' }).click();
+
+    // Export settings - CCC
+    await iframe.locator('app-configuration-toggle-field').filter({ hasText: 'Export corporate card' }).locator('p-inputswitch span').click();
+    await iframe.getByRole('combobox', { name: 'Select expense export module' }).click();
+    await iframe.getByRole('option', { name: 'Charge card transaction' }).click();
+    await iframe.getByText('Select corporate charge card').click();
+    await iframe.getByRole('option', { name: '12345' }).click();
+
+    await iframe.getByRole('combobox', { name: 'Closed' }).click();
+    await iframe.getByRole('option', { name: 'Approved' }).click();
+    await iframe.getByRole('combobox', { name: 'Export date' }).nth(1).click();
+    await iframe.getByRole('option', { name: 'Card transaction post date' }).click();
+    await iframe.getByRole('button', { name: 'Save and continue' }).click();
   });
 });
