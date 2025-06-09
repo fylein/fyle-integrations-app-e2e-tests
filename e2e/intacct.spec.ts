@@ -60,5 +60,19 @@ test.describe('Integrations - Intacct', () => {
     await iframe.getByRole('combobox', { name: 'Export date' }).nth(1).click();
     await iframe.getByRole('option', { name: 'Card transaction post date' }).click();
     await iframe.getByRole('button', { name: 'Save and continue' }).click();
+
+    // Import settings
+    await expect(iframe.getByRole('heading', { name: 'Import settings' })).toBeVisible();
+    await iframe.getByRole('button', { name: 'Save and continue' }).click();
+
+    // Advanced settings
+    await expect(iframe.getByRole('heading', { name: 'Advanced settings' })).toBeVisible();
+    await iframe.locator('app-configuration-toggle-field').filter({ hasText: 'Auto-create vendor When' }).locator('p-inputswitch span').click();
+    await iframe.getByRole('combobox', { name: 'Select location' }).click();
+    await iframe.getByRole('option', { name: 'BangaloreYoYo' }).click();
+
+    await iframe.getByRole('button', { name: 'Save and continue' }).click();
+    await iframe.getByRole('button', { name: 'Launch integration' }).click();
+    await expect(iframe.getByRole('heading', { name: 'Sit back and relax!' })).toBeVisible();
   });
 });
