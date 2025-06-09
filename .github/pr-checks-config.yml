@@ -1,0 +1,10 @@
+pr_checks:
+  title:
+    - name: 'prefix_check'
+      regex: '^(chore|ci|docs|feat|fix|refactor|revert)(\([\w\-\.]+\))?(!)?:'
+      message_if_not_matching: 'PR title must start with "fix:", "feat:", or one of the other commit types specified in .github/pr-checks-config.yml\n\nSee [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) for more information.'
+
+  description:
+    - name: 'clickup_check'
+      regex: '(?i)app.clickup.com'
+      message_if_not_matching: 'PR description must contain a link to a ClickUp'
