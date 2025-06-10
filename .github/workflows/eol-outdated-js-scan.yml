@@ -16,7 +16,6 @@ jobs:
     name: Run scanner
     with:
       npm-run-cmd: 'npm ci'
-      suppression: 'suppression.xml'
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
       nvd-api-key: ${{ secrets.NVD_API_KEY }}
