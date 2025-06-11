@@ -13,7 +13,7 @@ test.describe('Integrations - Intacct', () => {
     // eslint-disable-next-line playwright/no-raw-locators
     const iframe = page.locator('#integrations_iframe').contentFrame();
 
-    await iframe.getByText('Sage Intacct').click({timeout: 30_000});
+    await iframe.getByText('Sage Intacct').click();
     await expect(iframe.getByText('Guide to setup your')).toBeVisible();
     await iframe.getByRole('button', { name: 'Connect' }).click();
 
@@ -36,7 +36,7 @@ test.describe('Integrations - Intacct', () => {
     // Wait for attributes to sync before filling out export settings
     // Once synced, the GL account combobox should have
     await waitForComboboxOptions(page, iframe, glAccountCombobox, async () => {
-      await iframe.locator('app-configuration-toggle-field').filter({ hasText: 'Export reimbursable expenses' }).locator('p-inputswitch span').click();
+      await iframe.getByRole('switch', { name: 'Export reimbursable expenses' }).click({timeout: 6000});
       await iframe.getByRole('combobox', { name: 'Select expense export module' }).click();
       await iframe.getByRole('option', { name: 'Journal entry' }).click();
     });
@@ -49,7 +49,7 @@ test.describe('Integrations - Intacct', () => {
     await iframe.getByRole('option', { name: 'Based on employee e-mail ID' }).click();
 
     // Export settings - CCC
-    await iframe.locator('app-configuration-toggle-field').filter({ hasText: 'Export corporate card' }).locator('p-inputswitch span').click();
+    await iframe.getByRole('switch', { name: 'Export corporate card' }).click();
     await iframe.getByRole('combobox', { name: 'Select expense export module' }).click();
     await iframe.getByRole('option', { name: 'Charge card transaction' }).click();
     await iframe.getByText('Select corporate charge card').click();
@@ -67,7 +67,7 @@ test.describe('Integrations - Intacct', () => {
 
     // Advanced settings
     await expect(iframe.getByRole('heading', { name: 'Advanced settings' })).toBeVisible();
-    await iframe.locator('app-configuration-toggle-field').filter({ hasText: 'Auto-create vendor When' }).locator('p-inputswitch span').click();
+    await iframe.getByRole('switch', { name: 'Auto-create vendor' }).click();
     await iframe.getByRole('combobox', { name: 'Select location' }).click();
     await iframe.getByRole('option', { name: 'BangaloreYoYo' }).click();
 

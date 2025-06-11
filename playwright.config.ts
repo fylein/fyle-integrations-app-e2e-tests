@@ -38,7 +38,7 @@ export default defineConfig({
 
   reportSlowTests: {
     max: 10,
-    threshold: 1000 * 60,
+    threshold: 300_000, // 5 minutes
   },
 
   /* Configure projects for major browsers */
