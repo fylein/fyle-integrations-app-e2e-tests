@@ -31,6 +31,7 @@ export default defineConfig({
     /* Record a trace for each test, but remove it from successful test runs. See https://playwright.dev/docs/trace-viewer */
     trace: 'retain-on-failure',
     ignoreHTTPSErrors: !process.env.CI, // for local dev
+    actionTimeout: 60_000,
   },
 
   timeout: 600_000,
@@ -38,7 +39,7 @@ export default defineConfig({
 
   reportSlowTests: {
     max: 10,
-    threshold: 1000 * 60,
+    threshold: 300_000, // 5 minutes
   },
 
   /* Configure projects for major browsers */
