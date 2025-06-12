@@ -1,19 +1,23 @@
 import { test } from '../common/fixture';
-import { expect } from '@playwright/test';
+import { expect, FrameLocator } from '@playwright/test';
 import { login } from '../common/setup/login';
 import { waitForComboboxOptions } from '../common/utils/wait';
 
-test.describe('Intacct E2E', () => {
-  let iframe;
+test('Intacct E2E', async ({ page, account }) => {
+  let iframe: FrameLocator;
 
-  test('Onboarding', async ({page, account}) => {
+  await test.step('Login and go to integrations', async () => {
+    await login(page, account);
+    await page.getByRole('button', { name: 'Integrations' }).click();
+
+    // eslint-disable-next-line playwright/no-raw-locators
+    iframe = page.locator('#integrations_iframe').contentFrame();
+  });
+
+  await test.step('Onboarding', async (onboardingStep) => {
+    onboardingStep.skip(!!process.env.LOCAL_DEV_EMAIL, 'Local dev email detected, skipping onboarding');
+
     await test.step('Navigate to intacct onboarding', async () => {
-      await login(page, account);
-      await page.getByRole('button', { name: 'Integrations' }).click();
-
-      // eslint-disable-next-line playwright/no-raw-locators
-      iframe = page.locator('#integrations_iframe').contentFrame();
-
       await iframe.getByText('Sage Intacct').click();
       await expect(iframe.getByText('Guide to setup your')).toBeVisible();
       await iframe.getByRole('button', { name: 'Connect' }).click();
@@ -79,7 +83,6 @@ test.describe('Intacct E2E', () => {
 
       await iframe.getByRole('button', { name: 'Save and continue' }).click();
     });
-
 
     await test.step('Advanced settings', async () => {
       await expect(iframe.getByRole('heading', { name: 'Advanced settings' })).toBeVisible();

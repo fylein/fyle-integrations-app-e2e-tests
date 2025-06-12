@@ -114,6 +114,11 @@ export class FyleAccount {
   }
 
   public async delete(isRefreshTokenExpired = false) {
+    if (process.env.LOCAL_DEV_EMAIL) {
+      console.log('Local dev email detected, skipping account deletion');
+      return;
+    }
+
     const ownerAccessToken = isRefreshTokenExpired
       ? await this.getAccessToken(await this.getRefreshToken())
       : this.ownerAccessToken;
@@ -141,7 +146,7 @@ export class FyleAccount {
   }
 
   public generateEmail(role: string) {
-    return `${role}-${Date.now()}@${this.accountDomain}`;
+    return process.env.LOCAL_DEV_EMAIL ?? `${role}-${Date.now()}@${this.accountDomain}`;
   }
 
   public getOwnerAccessToken() {
@@ -150,6 +155,14 @@ export class FyleAccount {
 
   public static async create(orgCurrency = 'USD') {
     const account = new FyleAccount();
+
+    if (process.env.LOCAL_DEV_EMAIL) {
+      const refreshToken = await account.verifyUser(account.ownerEmail);
+      account.ownerAccessToken = await account.getAccessToken(refreshToken);
+
+      console.log('Local dev email detected, skipping account creation');
+      return account;
+    }
 
     const signupPayload = {
       email: account.ownerEmail,
