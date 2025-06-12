@@ -23,6 +23,12 @@ export default [
     },
   },
   {
+    files: ['common/setup/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
+  {
     ...playwright.configs['flat/recommended'],
     files: ['e2e/**/*.ts'],
     rules: {
