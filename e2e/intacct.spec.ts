@@ -2,6 +2,7 @@ import { test } from '../common/fixture';
 import { expect, FrameLocator } from '@playwright/test';
 import { login } from '../common/setup/login';
 import { waitForComboboxOptions } from '../common/utils/wait';
+import { ReportsService } from '../common/setup/reports.service';
 
 test('Intacct E2E', async ({ page, account }) => {
   let iframe: FrameLocator;
@@ -96,7 +97,25 @@ test('Intacct E2E', async ({ page, account }) => {
     });
   });
 
-  test('Failed export', async () => {
-    await expect(iframe.getByRole('heading', { name: 'Sit back and relax!' })).toBeVisible();
+  await test.step('Dashboard', async () => {
+    await test.step('No expense in queue', async () => {
+      await expect(iframe.getByRole('heading', { name: 'Sit back and relax!' })).toBeVisible();
+    });
+
+    const reportsService = await ReportsService.init(account, {
+      expensesAmount: { min: -100, max: 100 },
+      expensesCount: 2,
+    });
+
+    // Create reimbursable expenses in processing state
+    await reportsService.bulkCreate(1, 'processing');
+
+    // Create CCC expenses in approved state
+    await reportsService.createCCCReport('approved');
+
+    await test.step('Expense sync & real-time export', async () => {
+      await page.reload();
+      await expect(iframe.getByRole('heading', { name: 'expenses ready to export' })).toBeVisible();
+    });
   });
 });
