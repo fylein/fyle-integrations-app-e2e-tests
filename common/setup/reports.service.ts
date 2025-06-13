@@ -61,7 +61,6 @@ export class ReportsService {
       });
 
       if (!response.ok) {
-        console.log(await response.json());
         throw new Error(`Failed to submit report: ${response.status} ${response.statusText}`);
       }
 
@@ -311,9 +310,6 @@ export class ReportsService {
     });
 
     if (!response.ok) {
-      console.log(JSON.stringify(payload));
-      console.log(JSON.stringify(await response.json()));
-
       throw new Error(`Failed to submit report: ${response.status} ${response.statusText}`);
     }
 
