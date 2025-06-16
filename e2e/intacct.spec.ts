@@ -9,6 +9,13 @@ test('Intacct E2E', async ({ page, account }) => {
 
   await test.step('Login and go to integrations', async () => {
     await login(page, account);
+
+
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (await page.getByRole('button', { name: 'Next' }).isVisible({timeout: 500})) {
+      await page.getByRole('button', { name: 'Next' }).click();
+      await page.getByRole('button', { name: 'Let\'s start' }).click();
+    }
     await page.getByRole('button', { name: 'Integrations' }).click();
 
     // eslint-disable-next-line playwright/no-raw-locators
@@ -41,7 +48,7 @@ test('Intacct E2E', async ({ page, account }) => {
       const glAccountCombobox = iframe.getByRole('combobox', { name: 'Select GL account' });
 
       // Wait for attributes to sync before filling out export settings
-      // Once synced, the GL account combobox should have
+      // Once synced, the GL account combobox should have options
       await waitForComboboxOptions(page, iframe, glAccountCombobox, async () => {
         await iframe.getByRole('switch', { name: 'Export reimbursable expenses' }).click();
         await iframe.getByRole('combobox', { name: 'Select expense export module' }).click();
@@ -87,6 +94,10 @@ test('Intacct E2E', async ({ page, account }) => {
 
     await test.step('Advanced settings', async () => {
       await expect(iframe.getByRole('heading', { name: 'Advanced settings' })).toBeVisible();
+
+      // TODO: Remove this once real time export is stable
+      await iframe.getByRole('switch', { name: 'Schedule automatic export' }).click();
+
       await iframe.getByRole('switch', { name: 'Auto-create vendor' }).click();
       await iframe.getByRole('combobox', { name: 'Select location' }).click();
       await iframe.getByRole('option', { name: 'BangaloreYoYo' }).click();
@@ -102,20 +113,54 @@ test('Intacct E2E', async ({ page, account }) => {
       await expect(iframe.getByRole('heading', { name: 'Sit back and relax!' })).toBeVisible();
     });
 
-    const reportsService = await ReportsService.init(account, {
-      expensesAmount: { min: -100, max: 100 },
-      expensesCount: 2,
+    await test.step('Create Fyle reports', async () => {
+      const reportsService = await ReportsService.init(account, {
+        expensesAmount: { min: -100, max: 100 },
+        expensesCount: 2,
+      });
+
+      // Create reimbursable expenses in processing state
+      await reportsService.bulkCreate(1, 'processing');
+
+      // Create CCC expenses in approved state
+      await reportsService.createCCCReport('approved');
     });
 
-    // Create reimbursable expenses in processing state
-    await reportsService.bulkCreate(1, 'processing');
-
-    // Create CCC expenses in approved state
-    await reportsService.createCCCReport('approved');
-
-    await test.step('Expense sync & real-time export', async () => {
+    await test.step('Expense sync & failing real-time export', async () => {
       await page.reload();
-      await expect(iframe.getByRole('heading', { name: 'expenses ready to export' })).toBeVisible();
+
+      // TODO: Uncomment this once real time export is stable
+      // await expect.soft(iframe.getByRole('heading', { name: /Exporting [012] of [1-3] expenses?/ })).toBeVisible({timeout: 5000});
+
+      // TODO: Remove manual export once real time export is stable
+      await iframe.getByRole('button', { name: 'Export' }).click();
+
+
+      await expect(iframe.getByRole('heading', { name: /[1-3] expenses? ready to export/ })).toBeVisible();
+      await expect(iframe.getByRole('heading', { name: /[0-3] new expenses?, [1-3] previously failed/ })).toBeVisible();
+    });
+
+    await test.step('Error resolution', async () => {
+      await iframe.getByText('Resolve', { exact: true }).click();
+      await expect(iframe.getByRole('cell', { name: 'Category in Fyle' })).toBeVisible();
+
+      const emptyAccountFields = await iframe.getByRole('combobox', { name: 'Select an option' }).all();
+      for (const element of emptyAccountFields.reverse()) {
+        await element.click();
+        await iframe.getByRole('option', { name: 'Accm.Depr. Furniture &' }).first().click();
+      }
+
+      // Close the dialog
+      await iframe.getByRole('dialog', { name: 'Category mapping errors' }).getByRole('button').first().click();
+      await expect(iframe.getByText('Resolved', { exact: true })).toBeVisible();
+    });
+
+    await test.step('Export and assert success', async () => {
+      await iframe.getByRole('button', { name: 'Export' }).click();
+      await expect(iframe.getByRole('heading', { name: /Exporting [012] of [1-3] expenses?/ })).toBeVisible();
+      await expect(iframe.getByRole('heading', { name: 'You are all caught up!' })).toBeVisible();
+      await expect(iframe.getByText(/Successful expenses? [1-3]/)).toBeVisible();
+      await expect(iframe.getByText(/Failed expenses? 0/)).toBeVisible();
     });
   });
 });
