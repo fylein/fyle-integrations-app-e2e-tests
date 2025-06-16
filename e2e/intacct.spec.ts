@@ -7,6 +7,9 @@ import { ReportsService } from '../common/setup/reports.service';
 test('Intacct E2E', async ({ page, account }) => {
   let iframe: FrameLocator;
 
+  // Store the created report number to verify the export log
+  let reimbursableReport: {seq_num: string};
+
   await test.step('Login and go to integrations', async () => {
     await login(page, account);
 
@@ -120,7 +123,7 @@ test('Intacct E2E', async ({ page, account }) => {
       });
 
       // Create reimbursable expenses in processing state
-      await reportsService.bulkCreate(1, 'processing');
+      reimbursableReport = (await reportsService.bulkCreate(1, 'processing'))[0];
 
       // Create CCC expenses in approved state
       await reportsService.createCCCReport('approved');
@@ -161,6 +164,25 @@ test('Intacct E2E', async ({ page, account }) => {
       await expect(iframe.getByRole('heading', { name: 'You are all caught up!' })).toBeVisible();
       await expect(iframe.getByText(/Successful expenses? [1-3]/)).toBeVisible();
       await expect(iframe.getByText(/Failed expenses? 0/)).toBeVisible();
+
+      await test.step('Export log', async () => {
+        await iframe.getByRole('menuitem', { name: 'Export log' }).click();
+        await iframe.locator('app-search span').click();
+        await iframe.getByRole('textbox', { name: 'Search by employee name or' }).fill(reimbursableReport.seq_num);
+
+        await iframe.getByRole('cell', { name: 'Reimbursable' }).click();
+        await expect(iframe.getByRole('cell', { name: 'Expense ID' })).toBeVisible();
+
+        // There must be 2 expenses in the report
+        const expensesLocator = iframe.getByRole('row', { name: /E\/\d+\/\d+\/T\// });
+        await expect(expensesLocator).toHaveCount(2);
+
+        // The Expense ID, Category, and Amount fields must be populated
+        const cellsLocator = expensesLocator.first().getByRole('cell');
+        await expect(cellsLocator.first()).toContainText(/E\/\d+\/\d+\/T\//);
+        await expect(cellsLocator.nth(2)).toContainText(/\w+/);
+        await expect(cellsLocator.nth(3)).toContainText(/\d+/);
+      });
     });
   });
 });
