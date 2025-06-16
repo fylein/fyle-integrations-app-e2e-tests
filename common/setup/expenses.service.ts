@@ -165,7 +165,6 @@ export class ExpensesService {
       await waitFor(2000);
       return await this.getMatchedExpenseIDs(transactions);
     } else {
-      console.log({data});
       return data.flatMap((transaction) => transaction.matched_expense_ids);
     }
   }

@@ -36,6 +36,8 @@ export class ReportsService {
 
   private expensesService: ExpensesService;
 
+  private corporateCard: any;
+
   constructor(account: FyleAccount, config?: ReportsConfig) {
     this.account = account;
     this.config = config;
@@ -338,19 +340,23 @@ export class ReportsService {
     return response.json();
   }
 
-  public async createCCCReport(state: 'submitted' | 'approved' = 'approved') {
-    const corporateCardService = await CorporateCardService.init(this.account);
-    const corporateCard = await corporateCardService.createVisaRTFCard('4111111111111111');
+  public async createCCCReport(state: 'submitted' | 'approved' | 'paid' = 'approved') {
     const cccExpenseIDs = await this.expensesService.createCCCExpenses(
       this.config?.expensesCount || 1,
       'complete',
-      corporateCard.id,
+      this.corporateCard.id,
     );
     await this.createSubmittedReportForUser(cccExpenseIDs);
 
-    if (state === 'approved') {
-      const cccReportId = await this.expensesService.getReportIdFromExpense('admin', cccExpenseIDs[0]);
+    const cccReportId = await this.expensesService.getReportIdFromExpense('admin', cccExpenseIDs[0]);
+    if (state === 'approved' || state === 'paid') {
       await this.bulkApproveReportForUsers([cccReportId]);
+    }
+
+    if (state === 'paid') {
+      await this.markReportsPaid([{
+        id: cccReportId
+      }]);
     }
   }
 
@@ -360,6 +366,9 @@ export class ReportsService {
       amount: config?.expensesAmount,
       refDate: config?.expensesRefDate,
     });
+
+    const corporateCardService = await CorporateCardService.init(account);
+    reportsService.corporateCard = await corporateCardService.createVisaRTFCard('4111111111111111');
 
     return reportsService;
   }

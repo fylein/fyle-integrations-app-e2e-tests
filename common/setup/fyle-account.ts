@@ -25,7 +25,7 @@ export class FyleAccount {
     this.appDomain = process.env.APP_DOMAIN!;
     this.accountDomain = 'fylefore2etests.com';
     this.ownerEmail = this.generateEmail('owner');
-    console.log('ownerEmail', this.ownerEmail);
+    console.log('ownerEmail:', this.ownerEmail);
     this.password = 'Password@1234';
     this.orgName = "Owner's Personal Account";
 
@@ -139,6 +139,7 @@ export class FyleAccount {
     });
 
     if (response.ok) {
+      console.log('Deleted account:', this.ownerEmail);
       return await response.json();
     } else {
       throw new Error(`Failed to delete account: ${response.status} ${response.statusText}`);
