@@ -102,10 +102,6 @@ test('Intacct E2E', async ({ page, account }) => {
       await iframe.getByRole('switch', { name: 'Schedule automatic export' }).click();
 
       await iframe.getByRole('switch', { name: 'Auto-create vendor' }).click();
-      await iframe.getByRole('combobox', { name: 'Select location' }).click();
-      await iframe.getByRole('option', { name: 'BangaloreYoYo' }).click();
-      await iframe.getByRole('combobox', { name: 'Select project' }).click(); // Selecting a project to trigger an intacct-side error
-      await iframe.getByRole('option', { name: 'A Project New' }).click();
       await iframe.getByRole('button', { name: 'Save and continue' }).click();
       await iframe.getByRole('button', { name: 'Launch integration' }).click();
     });
@@ -143,7 +139,7 @@ test('Intacct E2E', async ({ page, account }) => {
       await expect(iframe.getByRole('heading', { name: /[0-3] new expenses?, [1-3] previously failed/ })).toBeVisible();
     });
 
-    await test.step('Error resolution', async () => {
+    await test.step('Mapping error resolution', async () => {
       await iframe.getByText('Resolve', { exact: true }).click();
       await expect(iframe.getByRole('cell', { name: 'Category in Fyle' })).toBeVisible();
 
@@ -156,6 +152,23 @@ test('Intacct E2E', async ({ page, account }) => {
       // Close the dialog
       await iframe.getByRole('dialog', { name: 'Category mapping errors' }).getByRole('button').first().click();
       await expect(iframe.getByText('Resolved', { exact: true })).toBeVisible();
+    });
+
+    await test.step('Sage Intacct errors should be reported', async () => {
+      await iframe.getByRole('button', { name: 'Export' }).click();
+      await expect(iframe.getByText('Failed expenses 3 View')).toBeVisible();
+      await expect(iframe.getByRole('heading', { name: 'Sage Intacct errors' })).toBeVisible();
+    });
+
+    await test.step('Sage Intacct error resolution', async () => {
+      await iframe.getByRole('menuitem', { name: 'Configuration' }).click();
+      await iframe.getByRole('menuitem', { name: 'Advanced settings' }).click();
+      await iframe.getByRole('combobox', { name: 'Select location' }).click();
+      await iframe.getByRole('option', { name: 'BangaloreYoYo' }).click();
+      await iframe.getByRole('button', { name: 'Save' }).click();
+      await expect(iframe.getByText('Advanced settings saved')).toBeVisible();
+
+      await iframe.getByRole('menuitem', { name: 'Dashboard' }).click();
     });
 
     await test.step('Export and assert success', async () => {
