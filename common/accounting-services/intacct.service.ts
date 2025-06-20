@@ -14,6 +14,12 @@ export class IntacctService {
       }
     });
 
-    return (await response.json()).data.cctransaction;
+    if (response.ok) {
+      return (await response.json()).data.cctransaction;
+    }
+
+    console.error(response.status);
+    console.error(await response.json());
+    throw new Error('Failed to fetch CCT from Intacct');
   }
 }

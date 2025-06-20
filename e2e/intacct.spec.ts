@@ -10,27 +10,6 @@ test('Intacct E2E', async ({ page, account }) => {
   let iframe: FrameLocator;
   let orgId: string;
 
-  // Store an exported CCC expense group to compare its details in export logs vs. Intacct
-  let cccExpense: Partial<{seq_num: string, amount: number, recordno: string, category: string}> = {};
-
-  // Store an intacct RECORDNO to later fetch the CCT from Intacct
-  await page.route(/.*\/expense_groups\/\?.*/, async route => {
-
-    const response = await route.fetch();
-    const res = (await response.json());
-    const expenseGroups = res.results;
-    const cccExpenseGroup = expenseGroups.find((expenseGroup) => expenseGroup.fund_source === 'CCC');
-    cccExpense = {
-      seq_num: cccExpenseGroup?.expenses?.[0]?.expense_number,
-      amount: cccExpenseGroup?.expenses?.[0]?.amount,
-      recordno: cccExpenseGroup?.response_logs?.key,
-      category: cccExpenseGroup?.expenses?.[0]?.category,
-    };
-
-    await route.fulfill({ response });
-  });
-
-
   await test.step('Login and go to integrations', async () => {
     const orgService = new OrgService(account);
     orgId = await orgService.getOrgId();
@@ -202,7 +181,27 @@ test('Intacct E2E', async ({ page, account }) => {
       await expect(iframe.getByText(/Successful expenses? [1-3]/)).toBeVisible();
       await expect(iframe.getByText(/Failed expenses? 0/)).toBeVisible();
 
+      // Store an exported CCC expense group to compare its details in export logs vs. Intacct
+      let cccExpense: {seq_num: string, amount: number, recordno: string, category: string};
+
       await test.step('Export log', async () => {
+        // Store an intacct RECORDNO to later fetch the CCT from Intacct
+        await page.route(/.*\/expense_groups\/\?.*/, async route => {
+
+          const response = await route.fetch();
+          const res = (await response.json());
+          const expenseGroups = res.results;
+          const cccExpenseGroup = expenseGroups.find((expenseGroup) => expenseGroup.fund_source === 'CCC');
+          cccExpense = {
+            seq_num: cccExpenseGroup?.expenses?.[0]?.expense_number,
+            amount: cccExpenseGroup?.expenses?.[0]?.amount,
+            recordno: cccExpenseGroup?.response_logs?.key,
+            category: cccExpenseGroup?.expenses?.[0]?.category,
+          };
+
+          await route.fulfill({ response });
+        });
+
         const expenseGroupReqPromise = page.waitForResponse(response =>
           response.url().includes('expense_groups/?') && response.status() === 200
         );
@@ -234,7 +233,7 @@ test('Intacct E2E', async ({ page, account }) => {
         const intacctService = new IntacctService(orgId);
         const cct = await intacctService.getCCTByInternalId(cccExpense.recordno!);
         expect(cct.RECORDID).toEqual(cccExpense.seq_num);
-        expect(cct.TRX_TOTALENTERED).toEqual(cccExpense.amount);
+        expect(cct.TRX_TOTALENTERED).toEqual(cccExpense.amount.toString());
         expect((cct.DESCRIPTION as string).includes(account.ownerEmail)).toBe(true);
       });
     });
