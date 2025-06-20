@@ -15,7 +15,6 @@ export default [
   {
     files: ['**/*.ts', '**/*.js'],
     rules: {
-      'no-unused-vars': 'error',
       'semi': 'error',
       'prefer-const': 'error',
       'no-unused-expressions': 'error',
