@@ -185,16 +185,14 @@ test('Intacct E2E', async ({ page, account }) => {
       let cccExpense: {seq_num: string, amount: number, recordno: string, category: string};
 
       await test.step('Export log', async () => {
-        // Store an intacct RECORDNO to later fetch the CCT from Intacct
         await page.route(/.*\/expense_groups\/\?.*/, async route => {
-
           const response = await route.fetch();
-          const res = (await response.json());
-          const expenseGroups = res.results;
+          const expenseGroups = (await response.json()).results;
           const cccExpenseGroup = expenseGroups.find((expenseGroup) => expenseGroup.fund_source === 'CCC');
           cccExpense = {
             seq_num: cccExpenseGroup?.expenses?.[0]?.expense_number,
             amount: cccExpenseGroup?.expenses?.[0]?.amount,
+            // Store an intacct RECORDNO to later fetch the CCT from Intacct
             recordno: cccExpenseGroup?.response_logs?.key,
             category: cccExpenseGroup?.expenses?.[0]?.category,
           };
