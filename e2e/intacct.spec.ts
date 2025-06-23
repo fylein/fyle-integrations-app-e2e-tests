@@ -3,16 +3,19 @@ import { expect, FrameLocator } from '@playwright/test';
 import { login } from '../common/setup/login';
 import { waitForComboboxOptions } from '../common/utils/wait';
 import { ReportsService } from '../common/setup/reports.service';
+import { OrgService } from '../common/setup/orgs.service';
+import { IntacctService } from '../common/accounting-services/intacct.service';
 
 test('Intacct E2E', async ({ page, account }) => {
   let iframe: FrameLocator;
-
-  // Store the created report number to verify the export log
-  let reimbursableReport: {seq_num: string};
+  let orgId: string;
 
   await test.step('Login and go to integrations', async () => {
-    await login(page, account);
+    const orgService = new OrgService(account);
+    orgId = await orgService.getOrgId();
+    console.log('orgId:', orgId);
 
+    await login(page, account);
 
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (await page.getByRole('button', { name: 'Next' }).isVisible({timeout: 500})) {
@@ -119,7 +122,7 @@ test('Intacct E2E', async ({ page, account }) => {
       });
 
       // Create reimbursable expenses in processing state
-      reimbursableReport = (await reportsService.bulkCreate(1, 'processing'))[0];
+      await reportsService.bulkCreate(1, 'processing');
 
       // Create CCC expenses in approved state
       await reportsService.createCCCReport('approved');
@@ -178,23 +181,58 @@ test('Intacct E2E', async ({ page, account }) => {
       await expect(iframe.getByText(/Successful expenses? [1-3]/)).toBeVisible();
       await expect(iframe.getByText(/Failed expenses? 0/)).toBeVisible();
 
-      await test.step('Export log', async () => {
-        await iframe.getByRole('menuitem', { name: 'Export log' }).click();
-        await iframe.locator('app-search span').click();
-        await iframe.getByRole('textbox', { name: 'Search by employee name or' }).fill(reimbursableReport.seq_num);
+      // Store an exported CCC expense group to compare its details in export logs vs. Intacct
+      let cccExpense: {seq_num: string, amount: number, recordno: string, category: string};
 
-        await iframe.getByRole('cell', { name: 'Reimbursable' }).click();
+      await test.step('Export log', async () => {
+        await page.route(/.*\/expense_groups\/\?.*/, async route => {
+          const response = await route.fetch();
+          const expenseGroups = (await response.json()).results;
+          const cccExpenseGroup = expenseGroups.find((expenseGroup) => expenseGroup.fund_source === 'CCC');
+          cccExpense = {
+            seq_num: cccExpenseGroup?.expenses?.[0]?.expense_number,
+            amount: cccExpenseGroup?.expenses?.[0]?.amount,
+            // Store an intacct RECORDNO to later fetch the CCT from Intacct
+            recordno: cccExpenseGroup?.response_logs?.key,
+            category: cccExpenseGroup?.expenses?.[0]?.category,
+          };
+
+          await route.fulfill({ response });
+        });
+
+        const expenseGroupReqPromise = page.waitForResponse(response =>
+          response.url().includes('expense_groups/?') && response.status() === 200
+        );
+
+        // Search by expense number of the saved CCC expense
+        await iframe.getByRole('menuitem', { name: 'Export log' }).click();
+        await iframe.getByLabel('Search button').click();
+        await iframe.getByRole('textbox', { name: 'Search by employee name or' }).fill(cccExpense.seq_num!);
+
+        // Wait for search to complete
+        await expenseGroupReqPromise;
+
+        // Open the expenses group dialog
+        await iframe.getByRole('cell', { name: 'Corporate card' }).first().click();
         await expect(iframe.getByRole('cell', { name: 'Expense ID' })).toBeVisible();
 
-        // There must be 2 expenses in the report
-        const expensesLocator = iframe.getByRole('row', { name: /E\/\d+\/\d+\/T\// });
-        await expect(expensesLocator).toHaveCount(2);
+        // There must be 1 expense in the CCC expense group
+        const expensesLocator = iframe.getByLabel('Expenses').getByRole('row', { name: 'E/' });
+        await expect(expensesLocator).toHaveCount(1);
 
-        // The Expense ID, Category, and Amount fields must be populated
+        // The Expense ID, Category, and Amount fields must be displayed
         const cellsLocator = expensesLocator.first().getByRole('cell');
-        await expect(cellsLocator.first()).toContainText(/E\/\d+\/\d+\/T\//);
-        await expect(cellsLocator.nth(2)).toContainText(/\w+/);
-        await expect(cellsLocator.nth(3)).toContainText(/\d+/);
+        await expect(cellsLocator.first()).toContainText(cccExpense.seq_num!);
+        await expect(cellsLocator.nth(2)).toContainText(cccExpense.category!);
+        await expect(cellsLocator.nth(3)).toContainText(cccExpense.amount!.toString());
+      });
+
+      await test.step('Verify exported fields in Intacct', async () => {
+        const intacctService = new IntacctService(orgId);
+        const cct = await intacctService.getCCTByInternalId(cccExpense.recordno!);
+        expect(cct.RECORDID).toEqual(cccExpense.seq_num);
+        expect(cct.TRX_TOTALENTERED).toEqual(cccExpense.amount.toString());
+        expect((cct.DESCRIPTION as string).includes(account.ownerEmail)).toBe(true);
       });
     });
   });

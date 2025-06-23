@@ -25,7 +25,6 @@ export class FyleAccount {
     this.appDomain = process.env.APP_DOMAIN!;
     this.accountDomain = 'fylefore2etests.com';
     this.ownerEmail = this.generateEmail('owner');
-    console.log('ownerEmail:', this.ownerEmail);
     this.password = 'Password@1234';
     this.orgName = "Owner's Personal Account";
 
@@ -182,7 +181,7 @@ export class FyleAccount {
     });
 
     if (response.ok) {
-      console.log('Account created successfully');
+      console.log('ownerEmail:', account.ownerEmail);
     } else if (response.status >= 500) {
       console.log(`Failed to create account due to ${response.status} server issue, retrying after 2s...`);
       await waitFor(2000);
