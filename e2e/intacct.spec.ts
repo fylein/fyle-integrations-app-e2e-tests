@@ -100,10 +100,6 @@ test('Intacct E2E', async ({ page, account }) => {
 
     await test.step('Advanced settings', async () => {
       await expect(iframe.getByRole('heading', { name: 'Advanced settings' })).toBeVisible();
-
-      // TODO: Remove this once real time export is stable
-      await iframe.getByRole('switch', { name: 'Schedule automatic export' }).click();
-
       await iframe.getByRole('switch', { name: 'Auto-create vendor' }).click();
       await iframe.getByRole('button', { name: 'Save and continue' }).click();
       await iframe.getByRole('button', { name: 'Launch integration' }).click();
@@ -131,15 +127,10 @@ test('Intacct E2E', async ({ page, account }) => {
     await test.step('Expense sync & failing real-time export', async () => {
       await page.reload();
 
-      // TODO: Uncomment this once real time export is stable
-      // await expect.soft(iframe.getByRole('heading', { name: /Exporting [012] of [1-3] expenses?/ })).toBeVisible({timeout: 5000});
+      await expect.soft(iframe.getByRole('heading', { name: /Exporting [012] of 3 expenses?/ })).toBeVisible({timeout: 10_000});
 
-      // TODO: Remove manual export once real time export is stable
-      await iframe.getByRole('button', { name: 'Export' }).click();
-
-
-      await expect(iframe.getByRole('heading', { name: /[1-3] expenses? ready to export/ })).toBeVisible();
-      await expect(iframe.getByRole('heading', { name: /[0-3] new expenses?, [1-3] previously failed/ })).toBeVisible();
+      await expect(iframe.getByRole('heading', { name: /3 expenses? ready to export/ })).toBeVisible();
+      await expect(iframe.getByRole('heading', { name: /0 new expenses?, 3 previously failed/ })).toBeVisible();
     });
 
     await test.step('Mapping error resolution', async () => {
@@ -176,9 +167,9 @@ test('Intacct E2E', async ({ page, account }) => {
 
     await test.step('Export and assert success', async () => {
       await iframe.getByRole('button', { name: 'Export' }).click();
-      await expect(iframe.getByRole('heading', { name: /Exporting [012] of [1-3] expenses?/ })).toBeVisible();
+      await expect(iframe.getByRole('heading', { name: /Exporting [012] of 3 expenses?/ })).toBeVisible();
       await expect(iframe.getByRole('heading', { name: 'You are all caught up!' })).toBeVisible();
-      await expect(iframe.getByText(/Successful expenses? [1-3]/)).toBeVisible();
+      await expect(iframe.getByText(/Successful expenses? 3/)).toBeVisible();
       await expect(iframe.getByText(/Failed expenses? 0/)).toBeVisible();
 
       // Store an exported CCC expense group to compare its details in export logs vs. Intacct
