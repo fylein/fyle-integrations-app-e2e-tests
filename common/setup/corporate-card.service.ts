@@ -9,7 +9,7 @@ export class CorporateCardService {
     this.account = account;
   }
 
-  public async createVisaRTFCard(cardNumber: string) {
+  public async getOrCreateVisaRTFCard(cardNumber: string) {
     const headers = getRequestHeaders(this.account.getOwnerAccessToken());
 
     const payload = {
@@ -17,6 +17,18 @@ export class CorporateCardService {
         card_number: cardNumber,
       },
     };
+
+    const corporateCards = await this.getCorporateCards();
+    const existingCard = corporateCards.find((card: any) => {
+      const a = card.card_number;
+      const b = cardNumber;
+      return a.slice(0, 4) === b.slice(0, 4) && a.slice(-4) === b.slice(-4);
+    });
+
+    if (existingCard) {
+      console.log(`Card ${cardNumber} already exists (${existingCard.id})`);
+      return existingCard;
+    }
 
     const response = await fetch(`${this.account.apiDomain}/platform/v1/spender/corporate_cards/visa_enroll`, {
       method: 'POST',
@@ -30,6 +42,13 @@ export class CorporateCardService {
 
     const { data: corporateCard } = await response.json();
     return corporateCard;
+  }
+
+  public async getCorporateCards() {
+    const headers = getRequestHeaders(this.account.getOwnerAccessToken());
+    const response = await fetch(`${this.account.apiDomain}/platform/v1/admin/corporate_cards`, { headers });
+    const body = await response.json();
+    return body.data;
   }
 
   public static async init(account: FyleAccount) {

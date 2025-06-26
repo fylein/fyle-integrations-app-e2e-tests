@@ -368,7 +368,7 @@ export class ReportsService {
     });
 
     const corporateCardService = await CorporateCardService.init(account);
-    reportsService.corporateCard = await corporateCardService.createVisaRTFCard('4111111111111111');
+    reportsService.corporateCard = await corporateCardService.getOrCreateVisaRTFCard('4111111111111111');
 
     return reportsService;
   }
