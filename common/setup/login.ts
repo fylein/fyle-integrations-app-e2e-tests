@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { FyleAccount } from './fyle-account';
+import { FyleAccount } from '../services/fyle/fyle-account.service';
 
 async function abortTracker(page: Page) {
   // Abort all requests for tracking.

@@ -1,7 +1,7 @@
-import { getRequestHeaders } from '../utils/api';
+import { getRequestHeaders } from '../../utils/api';
 import { faker } from '@faker-js/faker';
-import { getSuperAdminAccessToken } from '../utils/get-super-admin-access-token';
-import { waitFor } from '../utils/wait';
+import { getSuperAdminAccessToken } from '../../utils/get-super-admin-access-token';
+import { waitFor } from '../../utils/wait';
 
 export class FyleAccount {
   readonly apiDomain: string;

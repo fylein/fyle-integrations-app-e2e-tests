@@ -22,7 +22,7 @@ export default [
     },
   },
   {
-    files: ['common/setup/**/*.ts'],
+    files: ['common/services/fyle/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
     },
