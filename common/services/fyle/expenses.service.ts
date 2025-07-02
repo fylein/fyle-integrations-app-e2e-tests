@@ -1,6 +1,6 @@
-import { getRequestHeaders } from '../utils/api';
-import { waitFor } from '../utils/wait';
-import { FyleAccount as Account } from './fyle-account';
+import { getRequestHeaders } from '../../utils/api';
+import { waitFor } from '../../utils/wait';
+import { FyleAccount as Account } from './fyle-account.service';
 import { faker } from '@faker-js/faker';
 
 type ExpenseState = 'incomplete' | 'complete';

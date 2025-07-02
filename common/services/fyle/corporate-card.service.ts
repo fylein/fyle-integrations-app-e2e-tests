@@ -1,5 +1,5 @@
-import { getRequestHeaders } from '../utils/api';
-import { FyleAccount } from './fyle-account';
+import { getRequestHeaders } from '../../utils/api';
+import { FyleAccount } from './fyle-account.service';
 import { OrgSettingsService } from './org-settings.service';
 
 export class CorporateCardService {

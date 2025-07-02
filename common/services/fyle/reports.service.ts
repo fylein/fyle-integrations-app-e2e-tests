@@ -1,6 +1,6 @@
-import { getRequestHeaders } from '../utils/api';
-import { waitFor } from '../utils/wait';
-import { FyleAccount } from './fyle-account';
+import { getRequestHeaders } from '../../utils/api';
+import { waitFor } from '../../utils/wait';
+import { FyleAccount } from './fyle-account.service';
 import { ExpensesService } from './expenses.service';
 import { CorporateCardService } from './corporate-card.service';
 

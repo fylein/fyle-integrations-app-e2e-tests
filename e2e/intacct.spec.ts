@@ -2,9 +2,9 @@ import { test } from '../common/fixture';
 import { expect, FrameLocator } from '@playwright/test';
 import { login } from '../common/setup/login';
 import { waitForComboboxOptions } from '../common/utils/wait';
-import { ReportsService } from '../common/setup/reports.service';
-import { OrgService } from '../common/setup/orgs.service';
-import { IntacctService } from '../common/accounting-services/intacct.service';
+import { ReportsService } from '../common/services/fyle/reports.service';
+import { OrgService } from '../common/services/fyle/orgs.service';
+import { IntacctService } from '../common/services/intacct.service';
 
 test('Intacct E2E', async ({ page, account }) => {
   let iframe: FrameLocator;
