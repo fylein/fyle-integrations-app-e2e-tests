@@ -23,10 +23,10 @@ export class FyleAccount {
   constructor() {
     this.apiDomain = process.env.API_DOMAIN!;
     this.appDomain = process.env.APP_DOMAIN!;
-    this.accountDomain = 'fylefore2etests.com';
+    this.accountDomain = 'fyleforintegrationse2etests.com';
     this.ownerEmail = this.generateEmail('owner');
     this.password = 'Password@1234';
-    this.orgName = "Owner's Personal Account";
+    this.orgName = "Integrations E2E Tests";
 
     // Hardcoding seed value to make sure we get same set of random numbers every time
     faker.seed(0);

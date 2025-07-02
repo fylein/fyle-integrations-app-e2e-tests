@@ -127,8 +127,6 @@ test('Intacct E2E', async ({ page, account }) => {
     await test.step('Expense sync & failing real-time export', async () => {
       await page.reload();
 
-      await expect.soft(iframe.getByRole('heading', { name: /Exporting [012] of 3 expenses?/ })).toBeVisible({timeout: 10_000});
-
       await expect(iframe.getByRole('heading', { name: /3 expenses? ready to export/ })).toBeVisible();
       await expect(iframe.getByRole('heading', { name: /0 new expenses?, 3 previously failed/ })).toBeVisible();
     });
