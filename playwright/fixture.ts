@@ -1,5 +1,5 @@
 import { test as base } from '@playwright/test';
-import { FyleAccount } from './services/fyle/fyle-account.service';
+import { FyleAccount } from '../common/services/fyle/fyle-account.service';
 
 // Extend basic test fixture with our custom fixture
 export const test = base.extend<{ account: FyleAccount }>({

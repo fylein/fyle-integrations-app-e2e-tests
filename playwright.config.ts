@@ -12,15 +12,13 @@ dotenv.config({ path: '.env' });
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: './e2e',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  // workers: process.env.CI ? 1 : undefined,
+  workers: 10,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -45,9 +43,31 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'chromium',
+      name: 'e2e in chromium',
+      testDir: './e2e',
       use: { ...devices['Desktop Chrome'] },
     },
+
+    {
+      name: 'integration tests setup',
+      testMatch: /integration-tests-setup\.ts/,
+      teardown: 'integration tests teardown'
+    },
+
+    {
+      name: 'integration tests in chromium',
+      testDir: './integration-tests',
+      dependencies: ['integration tests setup'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+    },
+
+    {
+      name: 'integration tests teardown',
+      testMatch: /integration-tests-teardown\.ts/
+    }
     // {
     //   name: 'firefox',
     //   use: { ...devices['Desktop Firefox'] },

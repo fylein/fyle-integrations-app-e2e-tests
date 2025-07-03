@@ -1,5 +1,6 @@
-import { Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { FyleAccount } from '../services/fyle/fyle-account.service';
+import { waitFor } from '../utils/wait';
 
 async function abortTracker(page: Page) {
   // Abort all requests for tracking.
@@ -14,7 +15,7 @@ async function abortTracker(page: Page) {
 }
 
 
-export const login = async (page: Page, account: FyleAccount) => {
+export const loginAndGoToIntegrations = async (page: Page, account: FyleAccount) => {
   await abortTracker(page);
 
   const appDomain = account.appDomain;
@@ -26,4 +27,17 @@ export const login = async (page: Page, account: FyleAccount) => {
   await page.getByRole('button', { name: 'Next' }).click();
   await page.getByPlaceholder('Enter your password here').fill(account.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+
+  await page.getByRole('button', { name: 'Next' }).click();
+  await page.getByRole('button', { name: 'Let\'s start' }).click();
+
+  await page.getByRole('button', { name: 'Integrations' }).click();
+
+  return page.locator('#integrations_iframe').contentFrame();
+};
+
+export const goToIntegrations = async (page: Page, account: FyleAccount) => {
+  await page.goto(account.appDomain);
+  await page.getByRole('button', { name: 'Integrations' }).click();
+  return page.locator('#integrations_iframe').contentFrame();
 };

@@ -1,6 +1,6 @@
-import { test } from '../common/fixture';
+import { test } from '../playwright/fixture';
 import { expect, FrameLocator } from '@playwright/test';
-import { login } from '../common/setup/login';
+import { loginAndGoToIntegrations } from '../common/setup/login';
 import { waitForComboboxOptions } from '../common/utils/wait';
 import { ReportsService } from '../common/services/fyle/reports.service';
 import { OrgService } from '../common/services/fyle/orgs.service';
@@ -15,17 +15,7 @@ test('Intacct E2E', async ({ page, account }) => {
     orgId = await orgService.getOrgId();
     console.log('orgId:', orgId);
 
-    await login(page, account);
-
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if (await page.getByRole('button', { name: 'Next' }).isVisible({timeout: 500})) {
-      await page.getByRole('button', { name: 'Next' }).click();
-      await page.getByRole('button', { name: 'Let\'s start' }).click();
-    }
-    await page.getByRole('button', { name: 'Integrations' }).click();
-
-    // eslint-disable-next-line playwright/no-raw-locators
-    iframe = page.locator('#integrations_iframe').contentFrame();
+    iframe = await loginAndGoToIntegrations(page, account);
   });
 
   await test.step('Onboarding', async (onboardingStep) => {
