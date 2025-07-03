@@ -1,6 +1,5 @@
-import { expect, Page } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { FyleAccount } from '../services/fyle/fyle-account.service';
-import { waitFor } from '../utils/wait';
 
 async function abortTracker(page: Page) {
   // Abort all requests for tracking.
