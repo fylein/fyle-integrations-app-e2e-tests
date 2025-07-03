@@ -29,7 +29,7 @@ export default [
   },
   {
     ...playwright.configs['flat/recommended'],
-    files: ['e2e/**/*.ts'],
+    files: ['e2e/**/*.ts', 'integration-tests/**/*.ts'],
     rules: {
       ...playwright.configs['flat/recommended'].rules,
       'playwright/no-nested-step': 'off',
