@@ -20,11 +20,11 @@ export class FyleAccount {
 
   private ownerAccessToken: string;
 
-  constructor() {
+  constructor(ownerEmail?: string) {
     this.apiDomain = process.env.API_DOMAIN!;
     this.appDomain = process.env.APP_DOMAIN!;
     this.accountDomain = 'fyleforintegrationse2etests.com';
-    this.ownerEmail = this.generateEmail('owner');
+    this.ownerEmail = ownerEmail || this.generateEmail('owner');
     this.password = 'Password@1234';
     this.orgName = "Integrations E2E Tests";
 
@@ -153,7 +153,7 @@ export class FyleAccount {
     return this.ownerAccessToken;
   }
 
-  public static async create(orgCurrency = 'USD') {
+  public static async create(orgCurrency = 'USD'): Promise<FyleAccount> {
     const account = new FyleAccount();
 
     if (process.env.LOCAL_DEV_EMAIL) {
