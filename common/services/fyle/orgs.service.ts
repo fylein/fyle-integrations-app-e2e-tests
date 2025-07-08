@@ -6,7 +6,7 @@ export class OrgService {
   constructor(private account: FyleAccount) {
   }
 
-  public async getOrg() {
+  public async getOrgs() {
     const ownerAccessToken = this.account.getOwnerAccessToken();
     const headers = getRequestHeaders(ownerAccessToken);
     const orgResponse = await fetch(`${process.env.API_DOMAIN}/api/orgs`, { method: 'GET', headers });
@@ -14,6 +14,20 @@ export class OrgService {
   }
 
   public async getOrgId() {
-    return (await this.getOrg())[0].id;
+    return (await this.getOrgs())[0].id;
+  }
+
+  public async updateOrg(org: any) {
+    const currentOrg = (await this.getOrgs())[0];
+    const updatedOrg = { ...currentOrg, ...org };
+
+    const ownerAccessToken = this.account.getOwnerAccessToken();
+    const headers = getRequestHeaders(ownerAccessToken);
+    const orgResponse = await fetch(`${process.env.API_DOMAIN}/api/orgs/`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(updatedOrg)
+    });
+    return await orgResponse.json();;
   }
 }

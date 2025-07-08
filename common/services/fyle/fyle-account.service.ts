@@ -2,6 +2,7 @@ import { getRequestHeaders } from '../../utils/api';
 import { faker } from '@faker-js/faker';
 import { getSuperAdminAccessToken } from '../../utils/get-super-admin-access-token';
 import { waitFor } from '../../utils/wait';
+import { OrgService } from './orgs.service';
 
 export class FyleAccount {
   readonly apiDomain: string;
@@ -15,6 +16,8 @@ export class FyleAccount {
   readonly accountDomain: string;
 
   readonly orgName: string;
+
+  public orgId: string;
 
   private ownerRefreshToken: string;
 
@@ -195,6 +198,10 @@ export class FyleAccount {
 
     await account.markUserActive();
     await account.waitForOnboarding();
+
+    const orgService = new OrgService(account);
+    const org = await orgService.updateOrg({ name: account.orgName });
+    account.orgId = org.id;
 
     return account;
   }
