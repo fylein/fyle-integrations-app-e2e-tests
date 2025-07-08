@@ -6,4 +6,3 @@ teardown('Integration tests teardown', async ({}) => {
   const account = new FyleAccount(process.env.INTEGRATION_TESTS_EMAIL);
   await account.delete(true);
 });
-

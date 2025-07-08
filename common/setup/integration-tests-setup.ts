@@ -5,9 +5,11 @@ import { loginAndGoToIntegrations } from './login';
 const authFile = 'playwright/.auth/user.json';
 setup('Integration tests setup', async ({ page }) => {
   const account = await FyleAccount.create();
-  await loginAndGoToIntegrations(page, account);
-  await page.context().storageState({ path: authFile });
 
   process.env.INTEGRATION_TESTS_EMAIL = account.ownerEmail;
+  process.env.INTEGRATION_TESTS_ORG_ID = account.orgId;
+
+  await loginAndGoToIntegrations(page, account);
+  await page.context().storageState({ path: authFile });
 });
 
