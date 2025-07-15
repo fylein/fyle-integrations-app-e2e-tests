@@ -26,8 +26,8 @@ test('Mapping settings', async ({ iframeWithIntacctSetup: iframe, page }) => {
   await test.step('Mapping page header', async () => {
     await iframe.getByRole('menuitem', { name: 'Dashboard' }).click();
     await iframe.getByRole('menuitem', { name: 'Mapping' }).click();
-    const mappingPage = new MappingPage(iframe, 'employees');
 
+    const mappingPage = new MappingPage(iframe, 'employees');
     const unmappedEmployees = await mappingPage.getUnmappedCount();
     const totalEmployees = await mappingPage.getTotalCount();
 
@@ -35,6 +35,38 @@ test('Mapping settings', async ({ iframeWithIntacctSetup: iframe, page }) => {
     expect(unmappedEmployees).toBeGreaterThanOrEqual(0);
     expect(totalEmployees).toBeGreaterThanOrEqual(0);
     expect(unmappedEmployees).toBeLessThanOrEqual(totalEmployees);
+  });
+
+
+  await test.step('Setting a mapping', async () => {
+    const targetRow = iframe.getByRole('row', { name: 'E2E Employee 10' });
+
+    // Options should show on dropdown click
+    await targetRow.getByLabel('Select an option').click();
+    await expect(iframe.getByRole('option', { name: 'E2E Vendor 1', exact: true })).toBeVisible();
+
+    // Advanced search should filter options correctly
+    const searchResponse = page.waitForResponse(/.*paginated_destination_attributes.*/);
+    await iframe.getByRole('searchbox').fill('vendor 10');
+    await searchResponse;
+
+    await expect(iframe.getByRole('option', { name: 'E2E Vendor 1', exact: true })).toBeHidden();
+    await expect(iframe.getByRole('option', { name: 'E2E Vendor 10', exact: true })).toBeVisible();
+
+    // Selecting an option should update the status and unmapped count
+    const mappingPage = new MappingPage(iframe, 'employees');
+    const unmappedEmployees = await mappingPage.getUnmappedCount();
+    await expect(targetRow.getByText('UNMAPPED')).toBeVisible();
+
+    await iframe.getByRole('option', { name: 'E2E Vendor 10', exact: true }).click();
+    await expect(iframe.getByText('Employee mapping saved')).toBeVisible();
+
+    const newUnmappedEmployees = await mappingPage.getUnmappedCount();
+    expect(newUnmappedEmployees).toBe(unmappedEmployees - 1);
+    await expect(targetRow.getByText('MAPPED', { exact: true })).toBeVisible();
+
+    // The row should show the mapped option
+    await expect(targetRow).toHaveText('E2E Vendor 10');
   });
 
 
