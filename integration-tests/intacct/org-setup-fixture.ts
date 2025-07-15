@@ -40,7 +40,7 @@ export const test = base.extend<{ iframeWithIntacctSetup: FrameLocator }>({
     // Go to intacct, and wait for the dashboard to load
     await goToIntegrations(page, account);
     await iframe.getByText('Intacct').click();
-    await iframe.getByText('Successful expenses').waitFor();
+    await iframe.getByText('Export', { exact: true }).waitFor();
 
     // Use the fixture in the caller test, then delete the org
     await use(iframe);
