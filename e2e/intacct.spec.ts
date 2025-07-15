@@ -3,18 +3,12 @@ import { expect, FrameLocator } from '@playwright/test';
 import { loginAndGoToIntegrations } from '../common/setup/login';
 import { waitForComboboxOptions } from '../common/utils/wait';
 import { ReportsService } from '../common/services/fyle/reports.service';
-import { OrgService } from '../common/services/fyle/orgs.service';
 import { IntacctService } from '../common/services/intacct.service';
 
 test('Intacct E2E', async ({ page, account }) => {
   let iframe: FrameLocator;
-  let orgId: string;
 
   await test.step('Login and go to integrations', async () => {
-    const orgService = new OrgService(account);
-    orgId = await orgService.getOrgId();
-    console.log('orgId:', orgId);
-
     iframe = await loginAndGoToIntegrations(page, account);
   });
 
@@ -207,8 +201,7 @@ test('Intacct E2E', async ({ page, account }) => {
       });
 
       await test.step('Verify exported fields in Intacct', async () => {
-        const intacctService = new IntacctService(orgId);
-        const cct = await intacctService.getCCTByInternalId(cccExpense.recordno!);
+        const cct = await IntacctService.getCCTByInternalId(account.orgId, cccExpense.recordno!);
         expect(cct.RECORDID).toEqual(cccExpense.seq_num);
         expect(cct.TRX_TOTALENTERED).toEqual(cccExpense.amount.toString());
         expect((cct.DESCRIPTION as string).includes(account.ownerEmail)).toBe(true);
