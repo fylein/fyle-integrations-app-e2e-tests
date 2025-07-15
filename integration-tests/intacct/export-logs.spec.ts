@@ -1,3 +1,4 @@
+import { PaginatedPage } from "../../common/pom/paginated-page";
 import { getDateRangeIncludingToday, getDateRangeWithoutToday } from "../../common/utils/date";
 import { test } from "./org-setup-fixture";
 import { expect } from "@playwright/test";
@@ -107,18 +108,8 @@ test('Export logs', async ({ iframeWithIntacctSetup: iframe, page }) => {
   });
 
   await test.step('Verify pagination', async () => {
-    await iframe.getByRole('combobox', { name: '50' }).click();
-    await iframe.getByRole('option', { name: '10', exact: true }).click();
-
-    // There should be two pages
-    await expect(iframe.getByText('1 of 2')).toBeVisible();
-
-    // There should be 10 records on the first page
-    await expect(iframe.getByRole('row', { name: 'E2E Employee' })).toHaveCount(10);
-
-    // Clicking the next button should show the second page
-    await iframe.getByRole('button', { name: 'Next page' }).click();
-    await expect(iframe.getByRole('row', { name: 'E2E Employee' })).toHaveCount(1);
+    const paginatedPage = new PaginatedPage(iframe, 'E2E Employee');
+    await paginatedPage.verifyPagination();
   });
 
 });
