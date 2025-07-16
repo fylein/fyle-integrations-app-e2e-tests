@@ -26,6 +26,17 @@ import { PaginatedPage } from "../../common/pom/paginated-page";
     destinationAttributes: ['E2E Account 10', 'E2E Account 1'],
     destinationAttributeQuery: 'count 10',
   },
+  {
+    testName: 'Corporate card mapping',
+    sourceAttributeEndpoint: /.*expense_attributes\/\?limit.*/,
+    mappingTab: 'Corporate card',
+    countLabel: 'corporate cards',
+    rowSelector: 'E2E Corporate Card',
+    sourceAttribute: 'E2E Corporate Card 11',
+    sourceAttributeQuery: 'rd 11',
+    destinationAttributes: ['E2E Charge Card Number 10', 'E2E Charge Card Number 1'],
+    destinationAttributeQuery: 'ber 10',
+  },
 ].forEach(({ testName, sourceAttributeEndpoint, mappingTab, countLabel, rowSelector, sourceAttribute, sourceAttributeQuery, destinationAttributes, destinationAttributeQuery }) => {
   test(testName, async ({ iframeWithIntacctSetup: iframe, page }) => {
     await test.step('Zero state', async () => {
@@ -73,9 +84,7 @@ import { PaginatedPage } from "../../common/pom/paginated-page";
       await expect(iframe.getByRole('option', { name: destinationAttributes[1], exact: true })).toBeVisible();
 
       // Advanced search should filter options correctly
-      const searchResponse = page.waitForResponse(/.*paginated_destination_attributes.*/);
       await iframe.getByRole('searchbox').fill(destinationAttributeQuery);
-      await searchResponse;
 
       await expect(iframe.getByRole('option', { name: destinationAttributes[1], exact: true })).toBeHidden();
       await expect(iframe.getByRole('option', { name: destinationAttributes[0], exact: true })).toBeVisible();
@@ -86,7 +95,7 @@ import { PaginatedPage } from "../../common/pom/paginated-page";
       await expect(targetRow.getByText('UNMAPPED')).toBeVisible();
 
       await iframe.getByRole('option', { name: destinationAttributes[0], exact: true }).click();
-      await expect(iframe.getByText(`${mappingTab} mapping saved`)).toBeVisible();
+      await expect(iframe.getByText('mapping saved successfully')).toBeVisible();
 
       const newUnmappedEmployees = await mappingPage.getUnmappedCount();
       expect(newUnmappedEmployees).toBe(unmappedEmployees - 1);
