@@ -8,11 +8,15 @@ export const test = base.extend<{ iframeWithIntacctSetup: FrameLocator }>({
   iframeWithIntacctSetup: async ({ page }, use) => {
     // Avoid token health check & token invalidation in integration tests
     await page.route(/.*token_health.*/, async (route) => {
-      await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: '{"message":"Intacct connection is active"}'
+        await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: '{"message":"Intacct connection is active"}'
       });
+    });
+
+    await page.route(/.*sync_dimensions.*/, async (route) => {
+      await route.fulfill({ status: 200 });
     });
 
     // Capture workspace id for integration test org setup
