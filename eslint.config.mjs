@@ -32,6 +32,7 @@ export default [
     files: ['e2e/**/*.ts', 'integration-tests/**/*.ts'],
     rules: {
       ...playwright.configs['flat/recommended'].rules,
+      'playwright/valid-title': 'off',
       'playwright/no-nested-step': 'off',
       'playwright/no-skipped-test': 'off',
       'playwright/no-conditional-in-test': 'error',
