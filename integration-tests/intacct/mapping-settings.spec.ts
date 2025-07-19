@@ -119,17 +119,19 @@ import { PaginatedPage } from "../../common/pom/paginated-page";
 
     await test.step('Status filter', async () => {
       // When MAPPED is selected, only MAPPED records should be visible
-      await page.locator('#integrations_iframe').contentFrame().getByRole('combobox', { name: 'Select status' }).click();
-      await page.locator('#integrations_iframe').contentFrame().getByRole('option', { name: 'Mapped', exact: true }).click();
+      await iframe.getByRole('combobox', { name: 'Select status' }).click();
+      await iframe.getByRole('option', { name: 'Mapped', exact: true }).click();
+      await expect(iframe.getByText('MAPPED', { exact: true }).first()).toBeVisible();
       await expect(iframe.getByText('UNMAPPED', { exact: true }).first()).toBeHidden();
 
       // When UNMAPPED is selected, only UNMAPPED records should be visible
-      await page.locator('#integrations_iframe').contentFrame().getByRole('combobox', { name: 'Mapped' }).click();
-      await page.locator('#integrations_iframe').contentFrame().getByRole('option', { name: 'Unmapped', exact: true }).last().click();
+      await iframe.getByRole('combobox', { name: 'Mapped' }).click();
+      await iframe.getByRole('option', { name: 'Unmapped', exact: true }).last().click();
+      await expect(iframe.getByText('UNMAPPED', { exact: true }).first()).toBeVisible();
       await expect(iframe.getByText('MAPPED', { exact: true }).first()).toBeHidden();
 
       // When clear is clicked, both MAPPED and UNMAPPED records should be visible
-      await page.locator('#integrations_iframe').contentFrame().getByRole('combobox', { name: 'Unmapped' }).getByRole('img').click();
+      await iframe.getByRole('combobox', { name: 'Unmapped' }).getByRole('img').click();
       await expect(iframe.getByText('MAPPED', { exact: true }).first()).toBeVisible();
       await expect(iframe.getByText('UNMAPPED', { exact: true }).first()).toBeVisible();
     });
@@ -167,7 +169,10 @@ import { PaginatedPage } from "../../common/pom/paginated-page";
 
 
     await test.step('Alphabet filter', async () => {
+      await iframe.getByRole('menuitem', { name: mappingTab }).click();
+
       await iframe.getByText('X', { exact: true }).click();
+      await expect(iframe.getByText('No search result to show yet')).toBeVisible();
       await expect(iframe.getByRole('row', { name: rowSelector })).toBeHidden();
 
       await iframe.getByText(sourceAttribute.charAt(0).toUpperCase(), { exact: true }).click();
