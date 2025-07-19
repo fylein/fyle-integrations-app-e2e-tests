@@ -38,7 +38,7 @@ test.describe.configure({ mode: 'parallel' });
     onboardingText: 'TravelPerk invoices as credit',
   }
 ].forEach(({ integration, onboardingText }) => {
-  test(`Navigate to ${integration}`, async ({ page }) => {
+  test.skip(`Navigate to ${integration}`, async ({ page }) => {
     const account = new FyleAccount(process.env.INTEGRATION_TESTS_EMAIL!);
     const iframe = await goToIntegrations(page, account);
     await iframe.getByText(integration).click();

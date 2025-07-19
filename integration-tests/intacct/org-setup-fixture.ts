@@ -1,11 +1,11 @@
-import { test as base, FrameLocator } from '@playwright/test';
-import { FyleAccount } from '../../common/services/fyle/fyle-account.service';
-import { goToIntegrations } from '../../common/setup/login';
+import { test as base } from '../../playwright/fixture';
+import { FrameLocator } from '@playwright/test';
+import { goToIntegrations, loginAndGoToIntegrations } from '../../common/setup/login';
 import { IntacctService } from '../../common/services/intacct.service';
 
 // Extend basic test fixture with our custom fixture
 export const test = base.extend<{ iframeWithIntacctSetup: FrameLocator }>({
-  iframeWithIntacctSetup: async ({ page }, use) => {
+  iframeWithIntacctSetup: async ({ account, page }, use) => {
     // Avoid token health check & token invalidation in integration tests
     await page.route(/.*token_health.*/, async (route) => {
         await route.fulfill({
@@ -20,7 +20,7 @@ export const test = base.extend<{ iframeWithIntacctSetup: FrameLocator }>({
     });
 
     // Capture workspace id for integration test org setup
-    let workspaceId;
+    let workspaceId: number;
     await page.route('**/workspaces/', async (route) => {
       if (route.request().method() === 'POST') {
         const response = await route.fetch();
@@ -35,11 +35,10 @@ export const test = base.extend<{ iframeWithIntacctSetup: FrameLocator }>({
     );
 
     // Create an intacct workspace, get its ID and set it up
-    const account = new FyleAccount(process.env.INTEGRATION_TESTS_EMAIL!);
-    const iframe = await goToIntegrations(page, account);
+    const iframe = await loginAndGoToIntegrations(page, account);
     iframe.getByText('Intacct').click();
     await workspacePostCall;
-    await IntacctService.setupIntegrationTestOrg(workspaceId);
+    await IntacctService.setupIntegrationTestOrg(workspaceId!);
 
     // Go to intacct, and wait for the dashboard to load
     await goToIntegrations(page, account);
@@ -48,6 +47,6 @@ export const test = base.extend<{ iframeWithIntacctSetup: FrameLocator }>({
 
     // Use the fixture in the caller test, then delete the org
     await use(iframe);
-    await IntacctService.deleteIntegrationTestOrg(process.env.INTEGRATION_TESTS_ORG_ID!);
+    await IntacctService.deleteIntegrationTestOrg(workspaceId!);
   },
 });

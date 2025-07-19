@@ -18,7 +18,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : 10,
+  workers: 10,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -49,25 +49,13 @@ export default defineConfig({
     },
 
     {
-      name: 'integration tests setup',
-      testMatch: /integration-tests-setup\.ts/,
-      teardown: 'integration tests teardown'
-    },
-
-    {
       name: 'integration tests in chromium',
       testDir: './integration-tests',
-      dependencies: ['integration tests setup'],
       use: {
         ...devices['Desktop Chrome'],
-        storageState: 'playwright/.auth/user.json',
       },
     },
 
-    {
-      name: 'integration tests teardown',
-      testMatch: /integration-tests-teardown\.ts/
-    }
     // {
     //   name: 'firefox',
     //   use: { ...devices['Desktop Firefox'] },

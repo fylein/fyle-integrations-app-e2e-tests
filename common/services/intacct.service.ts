@@ -36,7 +36,7 @@ export class IntacctService {
 
 
     if (response.ok) {
-      console.log('Intacct integration test org setup successful. workspace_id: ', workspaceId);
+      console.log('Intacct integration test org setup successful. workspace_id:', workspaceId);
       return (await response.json());
     }
 
@@ -45,7 +45,7 @@ export class IntacctService {
     throw new Error('Failed to setup Intacct integration test org');
   }
 
-  public static async deleteIntegrationTestOrg(orgId: string) {
+  public static async deleteIntegrationTestOrg(workspaceId: number) {
     const response = await fetch(`${process.env.API_DOMAIN}/intacct-api/internal_api/e2e/destroy/`,
     {
       method: 'POST',
@@ -54,12 +54,12 @@ export class IntacctService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        org_id: orgId,
+        workspace_id: workspaceId,
       }),
     });
 
     if (response.ok) {
-      console.log('Intacct org deleted');
+      console.log('Intacct org deleted. workspace_id:', workspaceId);
       return (await response.json());
     }
 
