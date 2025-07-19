@@ -20,9 +20,9 @@ import { PaginatedPage } from "../../common/pom/paginated-page";
     sourceAttributeEndpoint: /.*category_attributes\/\?limit.*/,
     mappingTab: 'Category',
     countLabel: 'categories',
-    rowSelector: /Airlines|Bus|Entertainment|Food|Fuel|Groceries|Lodging|Mail|Mileage|Office Supplies|Others|Parking|Per Diem|Professional Services|Rental|Software|Taxi|Train|Unspecified|Utility/,
-    sourceAttribute: 'Groceries',
-    sourceAttributeQuery: 'oceri',
+    rowSelector: 'E2E Category',
+    sourceAttribute: 'E2E Category 5',
+    sourceAttributeQuery: 'ry 5',
     destinationAttributes: ['E2E Account 10', 'E2E Account 1'],
     destinationAttributeQuery: 'count 10',
   },
@@ -36,6 +36,17 @@ import { PaginatedPage } from "../../common/pom/paginated-page";
     sourceAttributeQuery: 'rd 11',
     destinationAttributes: ['E2E Charge Card Number 10', 'E2E Charge Card Number 1'],
     destinationAttributeQuery: 'ber 10',
+  },
+  {
+    testName: 'Project mapping',
+    sourceAttributeEndpoint: /.*expense_attributes\/\?limit.*/,
+    mappingTab: 'Custom Project',
+    countLabel: 'custom projects',
+    rowSelector: 'E2E Project',
+    sourceAttribute: 'E2E Project 10',
+    sourceAttributeQuery: '10',
+    destinationAttributes: ['E2E Account 10', 'E2E Account 1'],
+    destinationAttributeQuery: '10',
   },
 ].forEach(({ testName, sourceAttributeEndpoint, mappingTab, countLabel, rowSelector, sourceAttribute, sourceAttributeQuery, destinationAttributes, destinationAttributeQuery }) => {
   test(testName, async ({ iframeWithIntacctSetup: iframe, page }) => {
@@ -106,6 +117,26 @@ import { PaginatedPage } from "../../common/pom/paginated-page";
     });
 
 
+    await test.step('Status filter', async () => {
+      // When MAPPED is selected, only MAPPED records should be visible
+      await iframe.getByRole('combobox', { name: 'Select status' }).click();
+      await iframe.getByRole('option', { name: 'Mapped', exact: true }).click();
+      await expect(iframe.getByText('MAPPED', { exact: true }).first()).toBeVisible();
+      await expect(iframe.getByText('UNMAPPED', { exact: true }).first()).toBeHidden();
+
+      // When UNMAPPED is selected, only UNMAPPED records should be visible
+      await iframe.getByRole('combobox', { name: 'Mapped' }).click();
+      await iframe.getByRole('option', { name: 'Unmapped', exact: true }).last().click();
+      await expect(iframe.getByText('UNMAPPED', { exact: true }).first()).toBeVisible();
+      await expect(iframe.getByText('MAPPED', { exact: true }).first()).toBeHidden();
+
+      // When clear is clicked, both MAPPED and UNMAPPED records should be visible
+      await iframe.getByRole('combobox', { name: 'Unmapped' }).getByRole('img').click();
+      await expect(iframe.getByText('MAPPED', { exact: true }).first()).toBeVisible();
+      await expect(iframe.getByText('UNMAPPED', { exact: true }).first()).toBeVisible();
+    });
+
+
     await test.step('Verify pagination', async () => {
       const paginatedPage = new PaginatedPage(iframe, rowSelector);
       await paginatedPage.verifyPagination();
@@ -138,7 +169,10 @@ import { PaginatedPage } from "../../common/pom/paginated-page";
 
 
     await test.step('Alphabet filter', async () => {
+      await iframe.getByRole('menuitem', { name: mappingTab }).click();
+
       await iframe.getByText('X', { exact: true }).click();
+      await expect(iframe.getByText('No search result to show yet')).toBeVisible();
       await expect(iframe.getByRole('row', { name: rowSelector })).toBeHidden();
 
       await iframe.getByText(sourceAttribute.charAt(0).toUpperCase(), { exact: true }).click();
