@@ -1,14 +1,10 @@
 import { FrameLocator, expect } from '@playwright/test';
 
 export class PaginatedPage {
-  private iframe: FrameLocator;
-
-  private rowIdentifier: string;
-
-  constructor(iframe: FrameLocator, rowIdentifier: string) {
-    this.iframe = iframe;
-    this.rowIdentifier = rowIdentifier;
-  }
+  constructor(
+    private iframe: FrameLocator,
+    private rowIdentifier: string | RegExp,
+  ) { }
 
   /**
    * Changes the page size and verifies pagination behavior
