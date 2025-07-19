@@ -75,6 +75,8 @@ This is boring - you dont see magical stuff happening. This would be useful in a
   - Setup an org from scratch for every test group
 - When “locating” elements, use only visual cues
   - If you tweak DOM structure, test shouldn’t fail
-- Don’t use Page Object Model
+- Use Page Object Model *sparingly*
   - With POM, you can’t generate code from recording slowing down test writing
+  - Only if you have a solid reason, such as a particular block of code being reused across tests/files, should you consider POM
+  - POM files are located in the `common/pom/` folder
 - Don’t use sleep
