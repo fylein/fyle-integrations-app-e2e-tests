@@ -1,7 +1,7 @@
-import { test } from "./org-setup-fixture";
+import { test } from "../org-setup-fixture";
 import { expect } from "@playwright/test";
-import { MappingPage } from "../../common/pom/mapping-page";
-import { PaginatedPage } from "../../common/pom/paginated-page";
+import { MappingPage } from "../../../common/pom/mapping-page";
+import { PaginatedPage } from "../../../common/pom/paginated-page";
 
 [
   {

@@ -1,6 +1,6 @@
-import { PaginatedPage } from "../../common/pom/paginated-page";
-import { getDateRangeIncludingToday, getDateRangeWithoutToday } from "../../common/utils/date";
-import { test } from "./org-setup-fixture";
+import { PaginatedPage } from "../../../common/pom/paginated-page";
+import { getDateRangeIncludingToday, getDateRangeWithoutToday } from "../../../common/utils/date";
+import { test } from "../org-setup-fixture";
 import { expect } from "@playwright/test";
 
 test('Export logs', async ({ iframeWithIntacctSetup: iframe, page }) => {
