@@ -107,6 +107,6 @@ test('Advanced settings', async ({ iframeWithIntacctSetup: iframe, page }) => {
       await expect(iframe.getByText(text)).toBeVisible();
     }
 
-    await expect(iframe.getByRole('combobox', { name: 'Select date' })).toHaveValue(/.*\/15\/.*/);
+    await expect(iframe.getByRole('combobox', { name: 'Select date' })).toHaveValue(/.*\/16\/.*/);
   });
 });
