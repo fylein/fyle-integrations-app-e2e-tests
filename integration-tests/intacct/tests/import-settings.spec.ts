@@ -3,7 +3,7 @@ import { test } from "../org-setup-fixture";
 
 test.use({ useRealIntacctCreds: true });
 
-test('Import settings', async ({ iframeWithIntacctSetup: iframe, page }) => {
+test('Import settings', async ({ iframeWithIntacctSetup: iframe }) => {
   await iframe.getByRole('menuitem', { name: 'Configuration' }).click();
   await iframe.getByRole('menuitem', { name: 'Import settings' }).click();
 
