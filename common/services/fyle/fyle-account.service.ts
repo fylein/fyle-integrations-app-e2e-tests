@@ -172,6 +172,7 @@ export class FyleAccount {
       password: account.password,
       full_name: 'Owner',
       title: 'Owner',
+      internal_signup_token: process.env.INTERNAL_SIGNUP_TOKEN,
       signup_params: {
         org_currency: orgCurrency,
       },
