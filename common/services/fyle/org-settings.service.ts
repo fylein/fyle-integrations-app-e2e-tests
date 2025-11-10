@@ -10,7 +10,7 @@ export class OrgSettingsService {
 
   async getOrgSettings() {
     const headers = getRequestHeaders(this.account.getOwnerAccessToken());
-    const response = await fetch(`${this.account.apiDomain}/api/org/settings`, {
+    const response = await fetch(`${this.account.apiDomain}/platform/v1/admin/org_settings`, {
       method: 'GET',
       headers,
     });
@@ -28,11 +28,13 @@ export class OrgSettingsService {
     const orgSettings = await this.getOrgSettings();
 
     const payload = {
-      ...orgSettings,
-      ...params,
+      data: {
+        ...orgSettings,
+        ...params,
+      }
     };
 
-    const response = await fetch(`${this.account.apiDomain}/api/org/settings`, {
+    const response = await fetch(`${this.account.apiDomain}/platform/v1/admin/org_settings`, {
       method: 'POST',
       headers,
       body: JSON.stringify(payload),
