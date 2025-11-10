@@ -39,6 +39,7 @@ jobs:
         INTACCT_USER_ID: ${{ secrets.INTACCT_USER_ID }}
         INTACCT_PASSWORD: ${{ secrets.INTACCT_PASSWORD }}
         INTERNAL_API_CLIENT_ID: ${{ secrets.INTERNAL_API_CLIENT_ID }}
+        INTERNAL_SIGNUP_TOKEN: ${{ secrets.INTERNAL_SIGNUP_TOKEN }}
 
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
