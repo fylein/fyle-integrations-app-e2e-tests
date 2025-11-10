@@ -30,13 +30,13 @@ export const loginAndGoToIntegrations = async (page: Page, account: FyleAccount)
   await page.getByRole('button', { name: 'Next' }).click();
   await page.getByRole('button', { name: 'Let\'s start' }).click();
 
-  await page.getByRole('button', { name: 'Integrations' }).click();
+  await page.getByRole('button', { name: 'Integrations' }).nth(1).click();
 
   return page.locator('#integrations_iframe').contentFrame();
 };
 
 export const goToIntegrations = async (page: Page, account: FyleAccount) => {
   await page.goto(account.appDomain);
-  await page.getByRole('button', { name: 'Integrations' }).click();
+  await page.getByRole('button', { name: 'Integrations' }).nth(1).click();
   return page.locator('#integrations_iframe').contentFrame();
 };
