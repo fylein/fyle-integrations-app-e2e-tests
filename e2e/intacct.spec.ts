@@ -26,13 +26,13 @@ test('Intacct E2E', async ({ page, account }) => {
       await iframe.getByRole('textbox', { name: 'Enter user ID' }).fill(process.env.INTACCT_USER_ID!);
       await iframe.getByRole('textbox', { name: 'Enter user password' }).fill(process.env.INTACCT_PASSWORD!);
       // Use force click to bypass app-button wrapper intercepting pointer events
-      await iframe.getByRole('button', { name: 'Save and continue' }).click({ force: true });
+      await iframe.getByRole('button', { name: 'Save and continue' }).click();
 
       await iframe.getByRole('combobox', { name: 'Select location entity' }).click();
       await iframe.getByRole('option', { name: 'Top Level' }).click();
 
       // Use force click to bypass app-button wrapper intercepting pointer events
-      await iframe.getByRole('button', { name: 'Save and continue' }).click({ force: true });
+      await iframe.getByRole('button', { name: 'Save and continue' }).click();
     });
 
     await test.step('Export settings - reimbursable expenses', async () => {
