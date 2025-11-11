@@ -12,13 +12,13 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.52.0",
+    "@faker-js/faker": "^9.8.0",
+    "@playwright/test": "^1.56.1",
     "@types/node": "^22.15.30",
     "eslint": "^9.28.0",
     "eslint-plugin-diff": "^2.0.3",
     "eslint-plugin-playwright": "^2.2.0",
-    "typescript-eslint": "^8.33.1",
-    "@faker-js/faker": "^9.8.0"
+    "typescript-eslint": "^8.33.1"
   },
   "dependencies": {
     "dotenv": "^16.5.0"

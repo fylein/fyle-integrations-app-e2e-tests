@@ -8,3 +8,6 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 playwright/.auth/user.json
+
+# Playwright
+/playwright/.auth/
