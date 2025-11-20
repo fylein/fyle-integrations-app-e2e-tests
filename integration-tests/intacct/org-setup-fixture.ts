@@ -4,8 +4,10 @@ import { goToIntegrations, loginAndGoToIntegrations } from '../../common/setup/l
 import { IntacctService } from '../../common/services/intacct.service';
 
 // Extend basic test fixture with our custom fixture
-export const test = base.extend<{ iframeWithIntacctSetup: FrameLocator }>({
-  iframeWithIntacctSetup: async ({ account, page }, use) => {
+export const test = base.extend<{ iframeWithIntacctSetup: FrameLocator, useRealIntacctCreds: boolean, printValue: void }>({
+  useRealIntacctCreds: [false, { option: true }],
+
+  iframeWithIntacctSetup: async ({ account, page, useRealIntacctCreds }, use) => {
     // Avoid token health check & token invalidation in integration tests
     await page.route(/.*token_health.*/, async (route) => {
         await route.fulfill({
@@ -38,7 +40,7 @@ export const test = base.extend<{ iframeWithIntacctSetup: FrameLocator }>({
     const iframe = await loginAndGoToIntegrations(page, account);
     iframe.getByText('Intacct').click();
     await workspacePostCall;
-    await IntacctService.setupIntegrationTestOrg(workspaceId!);
+    await IntacctService.setupIntegrationTestOrg(workspaceId!, useRealIntacctCreds);
 
     // Go to intacct, and wait for the dashboard to load
     await goToIntegrations(page, account);

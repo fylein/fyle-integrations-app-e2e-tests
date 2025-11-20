@@ -21,7 +21,7 @@ export class IntacctService {
     throw new Error('Failed to fetch CCT from Intacct');
   }
 
-  public static async setupIntegrationTestOrg(workspaceId: number) {
+  public static async setupIntegrationTestOrg(workspaceId: number, useRealIntacctCreds: boolean) {
     const response = await fetch(`${process.env.API_DOMAIN}/intacct-api/internal_api/e2e/setup_org/`,
     {
       method: 'POST',
@@ -31,6 +31,7 @@ export class IntacctService {
       },
       body: JSON.stringify({
         workspace_id: workspaceId,
+        use_real_intacct_credentials: useRealIntacctCreds,
       }),
     });
 
