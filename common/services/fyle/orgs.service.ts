@@ -10,7 +10,8 @@ export class OrgService {
     const ownerAccessToken = this.account.getOwnerAccessToken();
     const headers = getRequestHeaders(ownerAccessToken);
     const orgResponse = await fetch(`${process.env.API_DOMAIN}/api/orgs`, { method: 'GET', headers });
-    return await orgResponse.json();
+    const { data: orgs } = await orgResponse.json();
+    return orgs;
   }
 
   public async getOrgId() {
