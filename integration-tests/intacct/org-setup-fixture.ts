@@ -50,9 +50,8 @@ export const test = base.extend<{ iframeWithIntacctSetup: FrameLocator }>({
       // Use the fixture in the caller test, then delete the org
       await use(iframe);
       await IntacctService.deleteIntegrationTestOrg(workspaceId!);
-    } catch (error) {
+    } catch {
       testInfo.skip(true, 'Intacct integration test org setup failed (internal API may be unavailable)');
-      await use(page.locator('#integrations_iframe').contentFrame() as FrameLocator);
     }
   },
 });

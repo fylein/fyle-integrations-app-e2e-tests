@@ -53,6 +53,8 @@ export const loginAndGoToIntegrations = async (page: Page, account: FyleAccount)
 
 export const goToIntegrations = async (page: Page, account: FyleAccount) => {
   await page.goto(account.appDomain);
-  await page.getByRole('button', { name: 'Integrations' }).nth(1).click();
+  const integrationsBtn = page.getByRole('button', { name: /Integrations/ });
+  await integrationsBtn.last().waitFor({ state: 'visible', timeout: 60_000 });
+  await integrationsBtn.last().click();
   return page.locator('#integrations_iframe').contentFrame();
 };
