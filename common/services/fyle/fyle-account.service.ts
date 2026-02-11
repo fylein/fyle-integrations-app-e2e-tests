@@ -190,6 +190,12 @@ export class FyleAccount {
       console.log(`Failed to create account due to ${response.status} server issue, retrying after 2s...`);
       await waitFor(2000);
       return this.create(orgCurrency);
+    } else if (response.status === 404) {
+      throw new Error(
+        `Failed to create account: 404 Not Found. Signup API may be missing. ` +
+        `Check API_DOMAIN and INTERNAL_SIGNUP_TOKEN in .env. ` +
+        `For local dev, set LOCAL_DEV_EMAIL to use an existing account and skip signup.`
+      );
     } else {
       throw new Error(`Failed to create account: ${response.status} ${response.statusText}`);
     }
