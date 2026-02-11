@@ -65,6 +65,13 @@ npx playwright test
 
 This is boring - you dont see magical stuff happening. This would be useful in a CI/CD situation
 
+### If account creation fails (404)
+
+The test creates a new Fyle account via the signup API. If you see `Failed to create account: 404 Not Found`:
+
+- Ensure `.env` has valid `API_DOMAIN` and `INTERNAL_SIGNUP_TOKEN` (get these from the team), or
+- For local dev with an existing account, set `LOCAL_DEV_EMAIL` in `.env` to your existing Fyle user email. The test will skip signup and use that account instead.
+
 ## Best practices
 
 - Read Playwright [best practices](https://playwright.dev/docs/best-practices) doc

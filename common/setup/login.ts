@@ -19,7 +19,8 @@ export const loginAndGoToIntegrations = async (page: Page, account: FyleAccount)
 
   const appDomain = account.appDomain;
   const adminTasksLink = `${appDomain}/app/admin/#/admin_tasks`;
-  await page.goto(`${appDomain}/app/accounts/#/signin?fyle_redirect_url=${btoa(adminTasksLink)}`);
+  const encodedRedirectUrl = Buffer.from(adminTasksLink).toString('base64');
+  await page.goto(`${appDomain}/app/accounts/#/signin?fyle_redirect_url=${encodedRedirectUrl}`);
 
   await page.getByPlaceholder('Enter your work email here').click();
   await page.getByPlaceholder('Enter your work email here').fill(account.ownerEmail);
@@ -27,10 +28,25 @@ export const loginAndGoToIntegrations = async (page: Page, account: FyleAccount)
   await page.getByPlaceholder('Enter your password here').fill(account.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 
-  await page.getByRole('button', { name: 'Next' }).click();
-  await page.getByRole('button', { name: 'Let\'s start' }).click();
+  // Wait for post-login: either redirect to app (existing user) or onboarding "Next" appears (new user)
+  await Promise.race([
+    page.waitForURL(/\/(app\/|accounts\/)/, { timeout: 60_000 }),
+    page.getByRole('button', { name: 'Next' }).waitFor({ state: 'visible', timeout: 60_000 }),
+  ]).catch(() => {});
 
-  await page.getByRole('button', { name: 'Integrations' }).nth(1).click();
+  // If onboarding "Next" is visible, complete it; otherwise we were redirected and skip
+  const nextBtn = page.getByRole('button', { name: 'Next' });
+  if (await nextBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    await nextBtn.click();
+    await page.getByRole('button', { name: 'Let\'s start' }).click();
+  }
+
+  // Wait for app to be ready (navigated to /app/)
+  await page.waitForURL(/\/app\//, { timeout: 60_000 }).catch(() => {});
+  // Sidebar "Integrations" button; .last() picks sidebar when both header and sidebar have Integrations
+  const integrationsBtn = page.getByRole('button', { name: /Integrations/ });
+  await integrationsBtn.last().waitFor({ state: 'visible', timeout: 60_000 });
+  await integrationsBtn.last().click();
 
   return page.locator('#integrations_iframe').contentFrame();
 };

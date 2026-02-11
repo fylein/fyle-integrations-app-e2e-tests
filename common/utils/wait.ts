@@ -30,18 +30,35 @@ export const waitForComboboxOptions = async (
     'Combobox';
   console.log(`Checking for options in '${name}'...`);
 
+  let currentCombobox = combobox;
+
   for (let i = 0; i < maxAttempts; i++) {
-    await combobox.click();
+    try {
+      await currentCombobox.click();
+    } catch (error) {
+      // Locator may be stale after reload; re-acquire from iframe
+      currentCombobox = iframe.getByRole('combobox', { name });
+      await currentCombobox.click();
+    }
     // If the options have not loaded, reload the page and try again
-    if (await iframe.getByRole('option', { name: 'No results found' }).isVisible({ timeout: 1_000 })) {
+    if (await iframe.getByRole('option', { name: 'No results found' }).isVisible({ timeout: 1_000 }).catch(() => false)) {
       await waitFor(waitTime);
       console.log(`🔃 '${name}' options not loaded on attempt ${i + 1}/${maxAttempts}, reloading...`);
       await page.reload();
+      await page.locator('#integrations_iframe').waitFor({ state: 'attached', timeout: 10_000 }).catch(() => {});
+      await waitFor(2_000);
       await setupFn?.();
+      // Re-acquire combobox after reload (previous locator is stale)
+      currentCombobox = iframe.getByRole('combobox', { name });
     } else {
       console.log(`✅ '${name}' options loaded on attempt ${i + 1}/${maxAttempts}`);
-      // Close the combobox before returning to avoid blocking the next test
-      await combobox.click();
+      // Close the combobox before returning
+      try {
+        await currentCombobox.click();
+      } catch (error) {
+        currentCombobox = iframe.getByRole('combobox', { name });
+        await currentCombobox.click();
+      }
       return;
     }
   }
