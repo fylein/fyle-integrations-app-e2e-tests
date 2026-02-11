@@ -35,7 +35,7 @@ export const waitForComboboxOptions = async (
   for (let i = 0; i < maxAttempts; i++) {
     try {
       await currentCombobox.click();
-    } catch (error) {
+    } catch {
       // Locator may be stale after reload; re-acquire from iframe
       currentCombobox = iframe.getByRole('combobox', { name });
       await currentCombobox.click();
@@ -55,7 +55,7 @@ export const waitForComboboxOptions = async (
       // Close the combobox before returning
       try {
         await currentCombobox.click();
-      } catch (error) {
+      } catch {
         currentCombobox = iframe.getByRole('combobox', { name });
         await currentCombobox.click();
       }
