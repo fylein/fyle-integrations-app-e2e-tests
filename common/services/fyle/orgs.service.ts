@@ -1,4 +1,4 @@
-import { getRequestHeaders } from "../../utils/api";
+import { getApiDomain, getRequestHeaders } from "../../utils/api";
 import { FyleAccount } from "./fyle-account.service";
 
 export class OrgService {
@@ -9,7 +9,7 @@ export class OrgService {
   public async getOrgs() {
     const ownerAccessToken = this.account.getOwnerAccessToken();
     const headers = getRequestHeaders(ownerAccessToken);
-    const orgResponse = await fetch(`${process.env.API_DOMAIN}/platform/v1/spender/orgs`, { method: 'GET', headers });
+    const orgResponse = await fetch(`${getApiDomain()}/platform/v1/spender/orgs`, { method: 'GET', headers });
     const { data: orgs } = await orgResponse.json();
     return orgs;
   }
@@ -24,11 +24,11 @@ export class OrgService {
 
     const ownerAccessToken = this.account.getOwnerAccessToken();
     const headers = getRequestHeaders(ownerAccessToken);
-    const orgResponse = await fetch(`${process.env.API_DOMAIN}/api/orgs/`, {
+    const orgResponse = await fetch(`${getApiDomain()}/api/orgs/`, {
       method: 'POST',
       headers,
       body: JSON.stringify(updatedOrg)
     });
-    return await orgResponse.json();;
+    return await orgResponse.json();
   }
 }

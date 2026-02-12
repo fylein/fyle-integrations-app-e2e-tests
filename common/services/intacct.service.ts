@@ -1,6 +1,9 @@
+import { getApiDomain } from '../utils/api';
+
 export class IntacctService {
   public static async getCCTByInternalId(orgId: string, internalId: string) {
-    const response = await fetch(`${process.env.API_DOMAIN}/intacct-api/internal_api/exported_entry/?` + new URLSearchParams({
+    const apiDomain = getApiDomain();
+    const response = await fetch(`${apiDomain}/intacct-api/internal_api/exported_entry/?` + new URLSearchParams({
       org_id: orgId,
       resource_type: 'charge_card_transaction',
       internal_id: internalId
@@ -22,7 +25,8 @@ export class IntacctService {
   }
 
   public static async setupIntegrationTestOrg(workspaceId: number) {
-    const response = await fetch(`${process.env.API_DOMAIN}/intacct-api/internal_api/e2e/setup_org/`,
+    const apiDomain = getApiDomain();
+    const response = await fetch(`${apiDomain}/intacct-api/internal_api/e2e/setup_org/`,
     {
       method: 'POST',
       headers: {
@@ -46,7 +50,8 @@ export class IntacctService {
   }
 
   public static async deleteIntegrationTestOrg(workspaceId: number) {
-    const response = await fetch(`${process.env.API_DOMAIN}/intacct-api/internal_api/e2e/destroy/`,
+    const apiDomain = getApiDomain();
+    const response = await fetch(`${apiDomain}/intacct-api/internal_api/e2e/destroy/`,
     {
       method: 'POST',
       headers: {

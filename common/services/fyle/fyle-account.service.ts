@@ -1,4 +1,4 @@
-import { getRequestHeaders } from '../../utils/api';
+import { getApiDomain, getRequestHeaders } from '../../utils/api';
 import { faker } from '@faker-js/faker';
 import { getSuperAdminAccessToken } from '../../utils/get-super-admin-access-token';
 import { waitFor } from '../../utils/wait';
@@ -24,8 +24,8 @@ export class FyleAccount {
   private ownerAccessToken: string;
 
   constructor(ownerEmail?: string) {
-    this.apiDomain = process.env.API_DOMAIN!;
-    this.appDomain = process.env.APP_DOMAIN!;
+    this.apiDomain = getApiDomain();
+    this.appDomain = (process.env.APP_DOMAIN || '').replace(/\/+$/, '');
     this.accountDomain = 'fyleforintegrationse2etests.com';
     this.ownerEmail = ownerEmail || this.generateEmail('owner');
     this.password = 'Password@1234';
@@ -178,7 +178,8 @@ export class FyleAccount {
       },
     };
 
-    const response = await fetch(`${account.apiDomain}/api/auth/basic/signup`, {
+    const signupUrl = `${account.apiDomain}/api/auth/basic/signup`;
+    const response = await fetch(signupUrl, {
       method: 'POST',
       headers: getRequestHeaders(),
       body: JSON.stringify(signupPayload),
@@ -191,9 +192,12 @@ export class FyleAccount {
       await waitFor(2000);
       return this.create(orgCurrency);
     } else if (response.status === 404) {
+      const body = await response.text();
       throw new Error(
-        `Failed to create account: 404 Not Found. Signup API may be missing. ` +
-        `Check API_DOMAIN and INTERNAL_SIGNUP_TOKEN in .env. ` +
+        `Failed to create account: 404 Not Found. ` +
+        `Requested URL: ${signupUrl} ` +
+        `(Check API_DOMAIN has no trailing slash and signup is available on this environment). ` +
+        `Response: ${body || response.statusText}. ` +
         `For local dev, set LOCAL_DEV_EMAIL to use an existing account and skip signup.`
       );
     } else {
