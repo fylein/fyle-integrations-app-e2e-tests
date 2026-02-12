@@ -28,6 +28,27 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
+    - name: Check required secrets
+      env:
+        API_DOMAIN: ${{ secrets.API_DOMAIN }}
+        APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
+        INTERNAL_SIGNUP_TOKEN: ${{ secrets.INTERNAL_SIGNUP_TOKEN }}
+        SUPER_ADMIN_EMAIL: ${{ secrets.SUPER_ADMIN_EMAIL }}
+        SUPER_ADMIN_PASSWORD: ${{ secrets.SUPER_ADMIN_PASSWORD }}
+      run: |
+        MISSING=""
+        [ -z "$API_DOMAIN" ] && MISSING="${MISSING} API_DOMAIN"
+        [ -z "$APP_DOMAIN" ] && MISSING="${MISSING} APP_DOMAIN"
+        [ -z "$INTERNAL_SIGNUP_TOKEN" ] && MISSING="${MISSING} INTERNAL_SIGNUP_TOKEN"
+        [ -z "$SUPER_ADMIN_EMAIL" ] && MISSING="${MISSING} SUPER_ADMIN_EMAIL"
+        [ -z "$SUPER_ADMIN_PASSWORD" ] && MISSING="${MISSING} SUPER_ADMIN_PASSWORD"
+        if [ -n "$MISSING" ]; then
+          echo "::error::Missing or empty secrets in Fyle Staging environment:$MISSING"
+          echo "Configure these in Settings > Environments > Fyle Staging."
+          exit 1
+        fi
+        echo "Required secrets are set."
+
     - name: Run Playwright tests
       run: npm run test
       env:
