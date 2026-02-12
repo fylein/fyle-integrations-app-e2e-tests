@@ -168,17 +168,20 @@ export class FyleAccount {
     }
 
     const signupPayload = {
-      email: account.ownerEmail,
-      password: account.password,
-      full_name: 'Owner',
-      title: 'Owner',
-      internal_signup_token: process.env.INTERNAL_SIGNUP_TOKEN,
-      signup_params: {
-        org_currency: orgCurrency,
+      data: {
+        email: account.ownerEmail,
+        password: account.password,
+        full_name: 'Owner',
+        title: 'Owner',
+        internal_signup_token: process.env.INTERNAL_SIGNUP_TOKEN,
+        signup_params: {
+          org_currency: orgCurrency,
+          org_name: account.orgName,
+        },
       },
     };
 
-    const response = await fetch(`${account.apiDomain}/api/auth/basic/signup`, {
+    const response = await fetch(`${account.apiDomain}/platform/v1/common/orgs/signup`, {
       method: 'POST',
       headers: getRequestHeaders(),
       body: JSON.stringify(signupPayload),
@@ -200,7 +203,7 @@ export class FyleAccount {
       throw new Error(`Failed to create account: ${response.status} ${response.statusText}`);
     }
 
-    const refreshToken = await account.verifyUser(signupPayload.email);
+    const refreshToken = await account.verifyUser(signupPayload.data.email);
     account.ownerAccessToken = await account.getAccessToken(refreshToken);
 
     await account.markUserActive();
