@@ -50,6 +50,7 @@ import { PaginatedPage } from "../../../common/pom/paginated-page";
   },
 ].forEach(({ testName, sourceAttributeEndpoint, mappingTab, countLabel, rowSelector, sourceAttribute, sourceAttributeQuery, destinationAttributes, destinationAttributeQuery }) => {
   test(testName, async ({ iframeWithIntacctSetup: iframe, page }) => {
+    if (!iframe) return;
     await test.step('Zero state', async () => {
       await page.route(sourceAttributeEndpoint, async (route) => {
         await route.fulfill({

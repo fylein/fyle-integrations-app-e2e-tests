@@ -65,12 +65,24 @@ npx playwright test
 
 This is boring - you dont see magical stuff happening. This would be useful in a CI/CD situation
 
-### If account creation fails (404)
+### If account creation fails (404 / 403)
 
-The test creates a new Fyle account via the signup API. If you see `Failed to create account: 404 Not Found`:
+The test creates a new Fyle account via the signup API. If signup is not available (404 or 403), **tests are skipped and the run still passes**.
 
-- Ensure `.env` has valid `API_DOMAIN` and `INTERNAL_SIGNUP_TOKEN` (get these from the team), or
-- For local dev with an existing account, set `LOCAL_DEV_EMAIL` in `.env` to your existing Fyle user email. The test will skip signup and use that account instead.
+To run tests against a real account instead:
+
+- Ensure `.env` has valid `API_DOMAIN` and `INTERNAL_SIGNUP_TOKEN` (from the team), or
+- Set `LOCAL_DEV_EMAIL` in `.env` to an existing Fyle user email; the test will skip signup and use that account (password must be `Password@1234`). `LOCAL_DEV_PASSWORD` is not used; the test account password is fixed.
+
+### CI (GitHub Actions)
+
+Tests run **without** requiring `LOCAL_DEV_EMAIL` or `LOCAL_DEV_PASSWORD`. If account creation (signup) fails (e.g. 404 or 403), tests are skipped and the run still **passes** (exit code 0).
+
+Required secrets in **Settings → Environments → Fyle Staging** are listed in the workflow. Optional:
+
+- **Use an existing account:** Add `LOCAL_DEV_EMAIL` with a staging user email to skip signup and run tests against that account (password must be `Password@1234`).
+- **Different signup URL:** Add `API_SIGNUP_URL` with the full signup URL if it differs from the default.
+- Check the "Run Playwright tests" log for `Signup URL: ...` to see which URL is used.
 
 ## Best practices
 

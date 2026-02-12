@@ -157,9 +157,10 @@ export class FyleAccount {
   }
 
   public static async create(orgCurrency = 'USD'): Promise<FyleAccount> {
-    const account = new FyleAccount();
+    const existingEmail = (process.env.LOCAL_DEV_EMAIL || '').trim() || undefined;
+    const account = new FyleAccount(existingEmail);
 
-    if (process.env.LOCAL_DEV_EMAIL) {
+    if (existingEmail) {
       const refreshToken = await account.verifyUser(account.ownerEmail);
       account.ownerAccessToken = await account.getAccessToken(refreshToken);
 
@@ -178,30 +179,59 @@ export class FyleAccount {
       },
     };
 
-    const signupUrl = `${account.apiDomain}/api/auth/basic/signup`;
-    const response = await fetch(signupUrl, {
-      method: 'POST',
-      headers: getRequestHeaders(),
-      body: JSON.stringify(signupPayload),
-    });
+    const signupUrls = (process.env.API_SIGNUP_URL || '').trim()
+      ? [(process.env.API_SIGNUP_URL || '').trim()]
+      : [
+          `${account.apiDomain}/api/auth/basic/signup`,
+          `${account.apiDomain}/platform/v1/auth/signup`,
+        ];
 
-    if (response.ok) {
+    let response: Response;
+    let signupUrl: string;
+    let lastStatus = 0;
+    let lastBody = '';
+
+    for (signupUrl of signupUrls) {
+      console.log('Signup URL:', signupUrl);
+      response = await fetch(signupUrl, {
+        method: 'POST',
+        headers: getRequestHeaders(),
+        body: JSON.stringify(signupPayload),
+      });
+      if (response.ok) {
+        break;
+      }
+      lastStatus = response.status;
+      lastBody = await response.text();
+      if (lastStatus !== 404) {
+        console.log(`Signup ${lastStatus} at ${signupUrl}: ${lastBody || response.statusText}`);
+      }
+      if (response.status === 404 && signupUrls.indexOf(signupUrl) < signupUrls.length - 1) {
+        console.log(`Signup 404 at ${signupUrl}, trying next URL...`);
+        continue;
+      }
+      break;
+    }
+
+    if (response!.ok) {
       console.log('ownerEmail:', account.ownerEmail);
-    } else if (response.status >= 500) {
-      console.log(`Failed to create account due to ${response.status} server issue, retrying after 2s...`);
+    } else if (lastStatus >= 500) {
+      console.log(`Failed to create account due to ${lastStatus} server issue, retrying after 2s...`);
       await waitFor(2000);
       return this.create(orgCurrency);
-    } else if (response.status === 404) {
-      const body = await response.text();
+    } else if (lastStatus === 404) {
       throw new Error(
         `Failed to create account: 404 Not Found. ` +
-        `Requested URL: ${signupUrl} ` +
-        `(Check API_DOMAIN has no trailing slash and signup is available on this environment). ` +
-        `Response: ${body || response.statusText}. ` +
-        `For local dev, set LOCAL_DEV_EMAIL to use an existing account and skip signup.`
+        `Tried: ${signupUrls.join(', ')}. ` +
+        `Response: ${lastBody || 'empty'}. ` +
+        `Ensure API_DOMAIN is correct and signup is enabled for this environment.`
       );
     } else {
-      throw new Error(`Failed to create account: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Failed to create account: ${lastStatus} ${response!.statusText}. ` +
+        `URL: ${signupUrls.join(', ')}. Response: ${lastBody || 'empty'}. ` +
+        `Check INTERNAL_SIGNUP_TOKEN and that signup is allowed for this environment.`
+      );
     }
 
     const refreshToken = await account.verifyUser(signupPayload.email);

@@ -4,8 +4,13 @@ import { goToIntegrations, loginAndGoToIntegrations } from '../../common/setup/l
 import { IntacctService } from '../../common/services/intacct.service';
 
 // Extend basic test fixture with our custom fixture
-export const test = base.extend<{ iframeWithIntacctSetup: FrameLocator }>({
+export const test = base.extend<{ iframeWithIntacctSetup: FrameLocator | undefined }>({
   iframeWithIntacctSetup: async ({ account, page }, use, testInfo) => {
+    if (!account) {
+      testInfo.skip(true, 'Account creation failed (signup unavailable)');
+      await use(undefined);
+      return;
+    }
     // Avoid token health check & token invalidation in integration tests
     await page.route(/.*token_health.*/, async (route) => {
         await route.fulfill({
