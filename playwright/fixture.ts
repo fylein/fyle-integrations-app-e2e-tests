@@ -5,13 +5,8 @@ import { FyleAccount } from '../common/services/fyle/fyle-account.service';
 export const test = base.extend<{ account: FyleAccount }>({
   // eslint-disable-next-line no-empty-pattern
   account: async ({}, use) => {
-    // Set up the fixture (create the account)
     const account = await FyleAccount.create();
-
-    // Use the fixture in the test
     await use(account);
-
-    // Clean up after test (delete the account)
     await account.delete();
   },
 });

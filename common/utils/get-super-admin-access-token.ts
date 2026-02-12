@@ -1,7 +1,8 @@
-import { getRequestHeaders } from './api';
+import { getApiDomain, getRequestHeaders } from './api';
 
 export async function getSuperAdminAccessToken() {
-  const signInResponse = await fetch(`${process.env.API_DOMAIN}/api/auth/basic/signin`, {
+  const apiDomain = getApiDomain();
+  const signInResponse = await fetch(`${apiDomain}/api/auth/basic/signin`, {
     method: 'POST',
     body: JSON.stringify({
       email: process.env.SUPER_ADMIN_EMAIL,
@@ -16,7 +17,7 @@ export async function getSuperAdminAccessToken() {
 
   const { refresh_token } = await signInResponse.json();
 
-  const accessTokenResponse = await fetch(`${process.env.API_DOMAIN}/api/auth/access_token`, {
+  const accessTokenResponse = await fetch(`${apiDomain}/api/auth/access_token`, {
     method: 'POST',
     headers: getRequestHeaders(),
     body: JSON.stringify({

@@ -65,12 +65,19 @@ npx playwright test
 
 This is boring - you dont see magical stuff happening. This would be useful in a CI/CD situation
 
-### If account creation fails (404)
+### If account creation fails (404 / 403)
 
-The test creates a new Fyle account via the signup API. If you see `Failed to create account: 404 Not Found`:
+The test creates a new Fyle account via the signup API. If signup is not available (404 or 403), the run will fail. Ensure `API_DOMAIN` and `INTERNAL_SIGNUP_TOKEN` are correct for your environment so signup succeeds.
 
-- Ensure `.env` has valid `API_DOMAIN` and `INTERNAL_SIGNUP_TOKEN` (get these from the team), or
-- For local dev with an existing account, set `LOCAL_DEV_EMAIL` in `.env` to your existing Fyle user email. The test will skip signup and use that account instead.
+For local dev only, you can set `LOCAL_DEV_EMAIL` in `.env` to an existing Fyle user email to skip signup (password must be `Password@1234`). CI does not use `LOCAL_DEV_EMAIL`; it uses signup.
+
+### CI (GitHub Actions)
+
+Tests run using **signup** (no `LOCAL_DEV_EMAIL`). Required secrets in **Settings → Environments → Fyle Staging**:
+
+- `API_DOMAIN`, `APP_DOMAIN`, `INTERNAL_SIGNUP_TOKEN`, `SUPER_ADMIN_EMAIL`, `SUPER_ADMIN_PASSWORD`, plus Intacct secrets as needed.
+
+Signup is tried at `API_DOMAIN/api/auth/basic/signup` and, on 404, at `API_DOMAIN/platform/v1/auth/signup`. Ensure staging exposes a working signup endpoint and `INTERNAL_SIGNUP_TOKEN` is valid.
 
 ## Best practices
 

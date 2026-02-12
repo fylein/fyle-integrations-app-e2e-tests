@@ -1,4 +1,4 @@
-import { getRequestHeaders } from '../../utils/api';
+import { getApiDomain, getRequestHeaders } from '../../utils/api';
 import { faker } from '@faker-js/faker';
 import { getSuperAdminAccessToken } from '../../utils/get-super-admin-access-token';
 import { waitFor } from '../../utils/wait';
@@ -24,8 +24,8 @@ export class FyleAccount {
   private ownerAccessToken: string;
 
   constructor(ownerEmail?: string) {
-    this.apiDomain = process.env.API_DOMAIN!;
-    this.appDomain = process.env.APP_DOMAIN!;
+    this.apiDomain = getApiDomain();
+    this.appDomain = (process.env.APP_DOMAIN || '').replace(/\/+$/, '');
     this.accountDomain = 'fyleforintegrationse2etests.com';
     this.ownerEmail = ownerEmail || this.generateEmail('owner');
     this.password = 'Password@1234';
@@ -157,9 +157,10 @@ export class FyleAccount {
   }
 
   public static async create(orgCurrency = 'USD'): Promise<FyleAccount> {
-    const account = new FyleAccount();
+    const existingEmail = (process.env.LOCAL_DEV_EMAIL || '').trim() || undefined;
+    const account = new FyleAccount(existingEmail);
 
-    if (process.env.LOCAL_DEV_EMAIL) {
+    if (existingEmail) {
       const refreshToken = await account.verifyUser(account.ownerEmail);
       account.ownerAccessToken = await account.getAccessToken(refreshToken);
 
@@ -178,26 +179,59 @@ export class FyleAccount {
       },
     };
 
-    const response = await fetch(`${account.apiDomain}/api/auth/basic/signup`, {
-      method: 'POST',
-      headers: getRequestHeaders(),
-      body: JSON.stringify(signupPayload),
-    });
+    const signupUrls = (process.env.API_SIGNUP_URL || '').trim()
+      ? [(process.env.API_SIGNUP_URL || '').trim()]
+      : [
+          `${account.apiDomain}/api/auth/basic/signup`,
+          `${account.apiDomain}/platform/v1/auth/signup`,
+        ];
 
-    if (response.ok) {
+    let response: Response;
+    let signupUrl: string;
+    let lastStatus = 0;
+    let lastBody = '';
+
+    for (signupUrl of signupUrls) {
+      console.log('Signup URL:', signupUrl);
+      response = await fetch(signupUrl, {
+        method: 'POST',
+        headers: getRequestHeaders(),
+        body: JSON.stringify(signupPayload),
+      });
+      if (response.ok) {
+        break;
+      }
+      lastStatus = response.status;
+      lastBody = await response.text();
+      if (lastStatus !== 404) {
+        console.log(`Signup ${lastStatus} at ${signupUrl}: ${lastBody || response.statusText}`);
+      }
+      if (response.status === 404 && signupUrls.indexOf(signupUrl) < signupUrls.length - 1) {
+        console.log(`Signup 404 at ${signupUrl}, trying next URL...`);
+        continue;
+      }
+      break;
+    }
+
+    if (response!.ok) {
       console.log('ownerEmail:', account.ownerEmail);
-    } else if (response.status >= 500) {
-      console.log(`Failed to create account due to ${response.status} server issue, retrying after 2s...`);
+    } else if (lastStatus >= 500) {
+      console.log(`Failed to create account due to ${lastStatus} server issue, retrying after 2s...`);
       await waitFor(2000);
       return this.create(orgCurrency);
-    } else if (response.status === 404) {
+    } else if (lastStatus === 404) {
       throw new Error(
-        `Failed to create account: 404 Not Found. Signup API may be missing. ` +
-        `Check API_DOMAIN and INTERNAL_SIGNUP_TOKEN in .env. ` +
-        `For local dev, set LOCAL_DEV_EMAIL to use an existing account and skip signup.`
+        `Failed to create account: 404 Not Found. ` +
+        `Tried: ${signupUrls.join(', ')}. ` +
+        `Response: ${lastBody || 'empty'}. ` +
+        `Ensure API_DOMAIN is correct and signup is enabled for this environment.`
       );
     } else {
-      throw new Error(`Failed to create account: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Failed to create account: ${lastStatus} ${response!.statusText}. ` +
+        `URL: ${signupUrls.join(', ')}. Response: ${lastBody || 'empty'}. ` +
+        `Check INTERNAL_SIGNUP_TOKEN and that signup is allowed for this environment.`
+      );
     }
 
     const refreshToken = await account.verifyUser(signupPayload.email);
