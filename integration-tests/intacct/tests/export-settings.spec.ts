@@ -2,7 +2,6 @@ import { expect } from "@playwright/test";
 import { test } from "../org-setup-fixture";
 
 test('Export settings', async ({ iframeWithIntacctSetup: iframe }) => {
-  if (!iframe) return;
   await test.step('Test destination option search - reimbursable', async () => {
     await iframe.getByRole('menuitem', { name: 'Configuration' }).click();
 

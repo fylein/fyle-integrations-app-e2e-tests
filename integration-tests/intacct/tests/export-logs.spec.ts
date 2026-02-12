@@ -4,7 +4,6 @@ import { test } from "../org-setup-fixture";
 import { expect } from "@playwright/test";
 
 test('Export logs', async ({ iframeWithIntacctSetup: iframe, page }) => {
-  if (!iframe) return;
   await test.step('Zero state', async () => {
     // If there are no expense groups in the response, the export log should show a zero state
     await page.route(/.*expense_groups\/\?limit.*/, async (route) => {

@@ -61,10 +61,6 @@ jobs:
         INTACCT_PASSWORD: ${{ secrets.INTACCT_PASSWORD }}
         INTERNAL_API_CLIENT_ID: ${{ secrets.INTERNAL_API_CLIENT_ID }}
         INTERNAL_SIGNUP_TOKEN: ${{ secrets.INTERNAL_SIGNUP_TOKEN }}
-        # Optional: use existing account in CI (skips signup). Set in Fyle Staging env if signup returns 404.
-        LOCAL_DEV_EMAIL: ${{ secrets.LOCAL_DEV_EMAIL }}
-        # Optional: full signup URL if different from API_DOMAIN + /api/auth/basic/signup
-        API_SIGNUP_URL: ${{ secrets.API_SIGNUP_URL }}
 
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}

@@ -67,22 +67,17 @@ This is boring - you dont see magical stuff happening. This would be useful in a
 
 ### If account creation fails (404 / 403)
 
-The test creates a new Fyle account via the signup API. If signup is not available (404 or 403), **tests are skipped and the run still passes**.
+The test creates a new Fyle account via the signup API. If signup is not available (404 or 403), the run will fail. Ensure `API_DOMAIN` and `INTERNAL_SIGNUP_TOKEN` are correct for your environment so signup succeeds.
 
-To run tests against a real account instead:
-
-- Ensure `.env` has valid `API_DOMAIN` and `INTERNAL_SIGNUP_TOKEN` (from the team), or
-- Set `LOCAL_DEV_EMAIL` in `.env` to an existing Fyle user email; the test will skip signup and use that account (password must be `Password@1234`). `LOCAL_DEV_PASSWORD` is not used; the test account password is fixed.
+For local dev only, you can set `LOCAL_DEV_EMAIL` in `.env` to an existing Fyle user email to skip signup (password must be `Password@1234`). CI does not use `LOCAL_DEV_EMAIL`; it uses signup.
 
 ### CI (GitHub Actions)
 
-Tests run **without** requiring `LOCAL_DEV_EMAIL` or `LOCAL_DEV_PASSWORD`. If account creation (signup) fails (e.g. 404 or 403), tests are skipped and the run still **passes** (exit code 0).
+Tests run using **signup** (no `LOCAL_DEV_EMAIL`). Required secrets in **Settings → Environments → Fyle Staging**:
 
-Required secrets in **Settings → Environments → Fyle Staging** are listed in the workflow. Optional:
+- `API_DOMAIN`, `APP_DOMAIN`, `INTERNAL_SIGNUP_TOKEN`, `SUPER_ADMIN_EMAIL`, `SUPER_ADMIN_PASSWORD`, plus Intacct secrets as needed.
 
-- **Use an existing account:** Add `LOCAL_DEV_EMAIL` with a staging user email to skip signup and run tests against that account (password must be `Password@1234`).
-- **Different signup URL:** Add `API_SIGNUP_URL` with the full signup URL if it differs from the default.
-- Check the "Run Playwright tests" log for `Signup URL: ...` to see which URL is used.
+Signup is tried at `API_DOMAIN/api/auth/basic/signup` and, on 404, at `API_DOMAIN/platform/v1/auth/signup`. Ensure staging exposes a working signup endpoint and `INTERNAL_SIGNUP_TOKEN` is valid.
 
 ## Best practices
 
