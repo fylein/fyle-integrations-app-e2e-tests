@@ -125,7 +125,7 @@ export class FyleAccount {
       ? await this.getAccessToken(await this.getRefreshToken())
       : this.ownerAccessToken;
     const headers = getRequestHeaders(ownerAccessToken);
-    const orgResponse = await fetch(`${this.apiDomain}/platform/v1/spender/orgs`, { method: 'GET', headers });
+    const orgResponse = await fetch(`${this.apiDomain}/api/orgs`, { method: 'GET', headers });
     const orgs = await orgResponse.json();
 
     if (orgs.count > 1) {
