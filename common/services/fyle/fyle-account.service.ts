@@ -125,9 +125,9 @@ export class FyleAccount {
       ? await this.getAccessToken(await this.getRefreshToken())
       : this.ownerAccessToken;
     const headers = getRequestHeaders(ownerAccessToken);
-    const orgResponse = await fetch(`${this.apiDomain}/api/orgs`, { method: 'GET', headers });
+    const orgResponse = await fetch(`${this.apiDomain}/platform/v1/spender/orgs`, { method: 'GET', headers });
     const orgs = await orgResponse.json();
-    console.log('orgs:', orgs);
+    console.log('orgs:', orgs, orgs.count);
     if (orgs.count > 1) {
       return await this.deleteAll(orgs.data, ownerAccessToken);
     }
