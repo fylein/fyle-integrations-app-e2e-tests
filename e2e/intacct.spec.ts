@@ -24,7 +24,7 @@ test('Intacct E2E', async ({ page, account }) => {
     await test.step('Connector', async () => {
       await iframe.getByRole('textbox', { name: 'Enter company ID' }).fill(process.env.INTACCT_COMPANY_ID!);
       await iframe.getByRole('textbox', { name: 'Enter user ID' }).fill(process.env.INTACCT_USER_ID!);
-      await iframe.getByRole('textbox', { name: 'Enter user password' }).fill(process.env.INTACCT_PASSWORD!);
+      // await iframe.getByRole('textbox', { name: 'Enter user password' }).fill(process.env.INTACCT_PASSWORD!);
       // Use force click to bypass app-button wrapper intercepting pointer events
       await iframe.getByRole('button', { name: 'Save and continue' }).click({ force: true });
 
