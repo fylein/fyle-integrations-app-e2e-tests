@@ -72,11 +72,19 @@ export class FyleAccount {
 
   private async markUserActive(userAccessToken?: string) {
     const accessToken = userAccessToken ? userAccessToken : this.ownerAccessToken;
+
     const headers = getRequestHeaders(accessToken);
-    await fetch(`${this.apiDomain}/api/orgusers/current/mark_active`, {
+    const response = await fetch(`${this.apiDomain}/platform/v1/spender/employees/mark_active`, {
       method: 'POST',
       headers,
+      body: JSON.stringify({
+        data: {},
+      }),
     });
+
+    if (!response.ok) {
+      throw new Error(`Failed to mark user active: ${response.status} ${response.statusText}`);
+    }
   }
 
   private async verifyUser(email: string): Promise<string> {
