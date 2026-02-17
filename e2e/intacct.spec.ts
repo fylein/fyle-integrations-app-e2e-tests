@@ -55,7 +55,7 @@ test('Intacct E2E', async ({ page, account }) => {
       await iframe.getByRole('combobox', { name: 'Select representation' }).click();
       await iframe.getByRole('option', { name: 'Vendor' }).click();
       await iframe.getByText('Select mapping method').click();
-      await iframe.getByRole('option', { name: 'Based on employee e-mail ID' }).click();
+      await iframe.getByRole('option', { name: 'Based on employee email ID' }).click();
     });
 
     await test.step('Export settings - CCC', async () => {
@@ -75,7 +75,7 @@ test('Intacct E2E', async ({ page, account }) => {
     await test.step('Import settings', async () => {
       await expect(iframe.getByRole('heading', { name: 'Import settings' })).toBeVisible();
       await iframe.getByRole('switch', { name: 'Import GL accounts as categories'}).click();
-      await iframe.getByRole('combobox', { name: 'Choose Fyle Expense field' }).first().click();
+      await iframe.getByRole('combobox', { name: 'Choose Sage Exp Mgmt Expense field' }).first().click();
       await iframe.getByRole('option', { name: 'Cost center' }).click();
 
       const howToImportComboboxes = await iframe.getByRole('combobox', { name: 'Select how to import' }).all();
@@ -103,7 +103,7 @@ test('Intacct E2E', async ({ page, account }) => {
       ).toBeVisible({ timeout: 30_000 });
     });
 
-    await test.step('Create Fyle reports', async () => {
+    await test.step('Create Sage Exp Mgmt reports', async () => {
       const reportsService = await ReportsService.init(account, {
         expensesAmount: { min: -100, max: 100 },
         expensesCount: 2,
@@ -127,7 +127,7 @@ test('Intacct E2E', async ({ page, account }) => {
     await test.step('Mapping error resolution', async (mappingStep) => {
       mappingStep.skip(!!process.env.LOCAL_DEV_EMAIL, 'Local dev: skipping');
       await iframe.getByText('Resolve', { exact: true }).click();
-      await expect(iframe.getByRole('cell', { name: 'Category in Fyle' })).toBeVisible();
+      await expect(iframe.getByRole('cell', { name: 'Category in Sage Exp Mgmt' })).toBeVisible();
 
       const emptyAccountFields = await iframe.getByRole('combobox', { name: 'Select an option' }).all();
       for (const element of emptyAccountFields.reverse()) {

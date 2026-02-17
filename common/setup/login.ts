@@ -32,20 +32,16 @@ export const loginAndGoToIntegrations = async (page: Page, account: FyleAccount)
   await Promise.race([
     page.waitForURL(/\/(app\/|accounts\/)/, { timeout: 60_000 }),
     page.getByRole('button', { name: 'Next' }).waitFor({ state: 'visible', timeout: 60_000 }),
+    page.getByRole('button', { name: 'Next' }).click(),
+    page.getByRole('button', { name: 'Let\'s start' }).click()
   ]).catch(() => {});
 
-  // If onboarding "Next" is visible, complete it; otherwise we were redirected and skip
-  const nextBtn = page.getByRole('button', { name: 'Next' });
-  if (await nextBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
-    await nextBtn.click();
-    await page.getByRole('button', { name: 'Let\'s start' }).click();
-  }
 
   // Wait for app to be ready (navigated to /app/)
   await page.waitForURL(/\/app\//, { timeout: 60_000 }).catch(() => {});
   // Sidebar "Integrations" button; .last() picks sidebar when both header and sidebar have Integrations
   const integrationsBtn = page.getByRole('button', { name: /Integrations/ });
-  await integrationsBtn.last().waitFor({ state: 'visible', timeout: 80_000 });
+  await integrationsBtn.last().waitFor({ state: 'visible', timeout: 60_000 });
   await integrationsBtn.last().click();
 
   return page.locator('#integrations_iframe').contentFrame();
@@ -54,7 +50,7 @@ export const loginAndGoToIntegrations = async (page: Page, account: FyleAccount)
 export const goToIntegrations = async (page: Page, account: FyleAccount) => {
   await page.goto(account.appDomain);
   const integrationsBtn = page.getByRole('button', { name: /Integrations/ });
-  await integrationsBtn.last().waitFor({ state: 'visible', timeout: 80_000 });
+  await integrationsBtn.last().waitFor({ state: 'visible', timeout: 60_000 });
   await integrationsBtn.last().click();
   return page.locator('#integrations_iframe').contentFrame();
 };
