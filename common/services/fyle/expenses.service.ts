@@ -55,9 +55,15 @@ export class ExpensesService {
   }
 
   private getExpenseCategories(systemCategories?: string[]) {
+    console.log('Categories fetched', this.categories);
+    console.log('System categories', systemCategories);
     if (systemCategories?.length) {
+      console.log('Filtering categories if', this.categories.filter((category) => systemCategories.includes(category.system_category)));
       return this.categories.filter((category) => systemCategories.includes(category.system_category));
     } else {
+      console.log('Filtering categories else', this.categories.filter(
+        (category) => !['Mileage', 'Per Diem', 'Unspecified'].includes(category.system_category),
+      ));
       return this.categories.filter(
         (category) => !['Mileage', 'Per Diem', 'Unspecified'].includes(category.system_category),
       );
@@ -106,8 +112,84 @@ export class ExpensesService {
 
       return await this.getCategories();
     }
+    console.log('Categories fetched successfully', categories);
 
     return categories;
+  }
+
+  private async getAdminCategory() {
+    const headers = getRequestHeaders(this.account.getOwnerAccessToken());
+    const response = await fetch(`${this.account.apiDomain}/platform/v1/admin/categories`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch admin category: ${response.status} ${response.statusText}`);
+    }
+
+    const { data: category } = await response.json();
+
+    console.log('Admin category fetched successfully', category.length);
+
+    return category;
+  }
+
+  private async createOrUpdateCategory() {
+    const adminCategory = await this.getAdminCategory();
+    const unspecifiedCategory = adminCategory.find((category) => category.name === 'Unspecified');
+    if (unspecifiedCategory) {
+      unspecifiedCategory.is_enabled = true;
+    }
+
+    console.log('Unspecified category', unspecifiedCategory);
+    const customCategory = [{
+      "name": "Test Category",
+      "sub_category": "Turbo charged",
+      "is_enabled": true,
+      "system_category": "Others",
+      "code": "C1234",
+      "restricted_project_ids": [],
+      "restricted_spender_user_ids": []
+    },{
+      code: null,
+      created_at: '2026-02-18T08:58:19.142062+00:00',
+      display_name: 'Train',
+      is_enabled: true,
+      name: 'Trainss',
+      org_id: 'orVP8LIe3rE2',
+      restricted_project_ids: null,
+      restricted_spender_user_ids: [],
+      sub_category: null,
+      system_category: 'Train',
+      updated_at: '2026-02-18T08:58:19.142064+00:00'
+    }]
+
+    const updatecategory = unspecifiedCategory ? [unspecifiedCategory].concat(customCategory) : customCategory;
+    const payload = {
+      data: updatecategory
+    }
+
+    console.log('Payload for category update', payload);
+
+    const headers = getRequestHeaders(this.account.getOwnerAccessToken());
+    const response = await fetch(`${this.account.apiDomain}/platform/v1/admin/categories/bulk`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    console.log('Response for category update', response);
+
+    if (!response.ok) {
+      throw new Error(`Failed to create or update category: ${response.status} ${response.statusText}`);
+    }
+
+    const updatedAdminCategory = await this.getAdminCategory();
+
+    console.log('Updated admin category', updatedAdminCategory.length);
+
+    return updatedAdminCategory;
   }
 
   private async createCCCTransaction(
@@ -202,11 +284,15 @@ export class ExpensesService {
 
     const role = userEmail ? 'admin' : 'spender';
 
+    console.log('Payload for expense creation', payload);
+
     const response = await fetch(`${this.account.apiDomain}/platform/v1/${role}/expenses`, {
       method: 'POST',
       headers,
       body: JSON.stringify(payload),
     });
+
+    console.log('Response for expense creation', response);
 
     if (!response.ok) {
       throw new Error(`Failed to create expense: ${response.status} ${response.statusText}`);
@@ -281,7 +367,7 @@ export class ExpensesService {
 
   public static async init(account: Account, config?: ExpensesConfig) {
     const expensesService = new ExpensesService(account, config);
-    expensesService.categories = await expensesService.getCategories();
+    expensesService.categories = await expensesService.createOrUpdateCategory();
     return expensesService;
   }
 }

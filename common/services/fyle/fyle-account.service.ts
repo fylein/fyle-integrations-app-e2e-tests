@@ -133,13 +133,13 @@ export class FyleAccount {
       ? await this.getAccessToken(await this.getRefreshToken())
       : this.ownerAccessToken;
     const headers = getRequestHeaders(ownerAccessToken);
-    const orgResponse = await fetch(`${this.apiDomain}/api/orgs`, { method: 'GET', headers });
+    const orgResponse = await fetch(`${this.apiDomain}/platform/v1/spender/orgs`, { method: 'GET', headers });
     const orgs = await orgResponse.json();
-    if (orgs.length > 1) {
-      return await this.deleteAll(orgs, ownerAccessToken);
+    if (orgs.count > 1) {
+      return await this.deleteAll(orgs.data, ownerAccessToken);
     }
 
-    const org = orgs[0];
+    const org = orgs.data[0];
     const response = await fetch(`${this.apiDomain}/platform/v1/owner/orgs/delete`, {
       method: 'POST',
       headers,
@@ -176,17 +176,20 @@ export class FyleAccount {
     }
 
     const signupPayload = {
-      email: account.ownerEmail,
-      password: account.password,
-      full_name: 'Owner',
-      title: 'Owner',
-      internal_signup_token: process.env.INTERNAL_SIGNUP_TOKEN,
-      signup_params: {
-        org_currency: orgCurrency,
+      data: {
+        email: account.ownerEmail,
+        password: account.password,
+        full_name: 'Owner',
+        title: 'Owner',
+        internal_signup_token: process.env.INTERNAL_SIGNUP_TOKEN,
+        signup_params: {
+          org_currency: orgCurrency,
+          org_name: account.orgName,
+        },
       },
     };
 
-    const response = await fetch(`${account.apiDomain}/api/auth/basic/signup`, {
+    const response = await fetch(`${account.apiDomain}/platform/v1/common/orgs/signup`, {
       method: 'POST',
       headers: getRequestHeaders(),
       body: JSON.stringify(signupPayload),
@@ -208,7 +211,7 @@ export class FyleAccount {
       throw new Error(`Failed to create account: ${response.status} ${response.statusText}`);
     }
 
-    const refreshToken = await account.verifyUser(signupPayload.email);
+    const refreshToken = await account.verifyUser(signupPayload.data.email);
     account.ownerAccessToken = await account.getAccessToken(refreshToken);
 
     await account.markUserActive();
